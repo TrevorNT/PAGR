@@ -12,6 +12,7 @@
 *.class
 
 # Remove sensitive information
+GatewayConnection.java
 
 # generated files
 bin/
