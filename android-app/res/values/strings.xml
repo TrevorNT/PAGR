@@ -3,13 +3,26 @@
 
     <string name="app_name">Pagr</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="hello_world">No INternet :'(</string>
     <string name="firstname_lastname">James</string>
+
+    <!-- Guest Number Activity -->
     <string name="user_greeting">Hello James!</string>
     <string name="number_of_guests_holdtext">Number of guests:</string>
     <string name="button_ok">OK</string>
+
+    <!-- Waiting Time Activity -->
     <string name="waiting_time_hold_text">Your estimated waiting time is</string>
     <string name="waiting_time_number">%s</string>
     <string name="waiting_time_minutes">minutes</string>
+    <string name="make_reservation_hold_text">Would you like to reserve a table?</string>
+    <string name="button_yes">Yes</string>
+
+    <!-- Order Appetizer Activity -->
+    <string name="table_reservation_confirm_text">Ok, we\'ll buzz you when your table is ready :)</string>
+    <string name="do_you_want_appetizer_hold_text">Do you want to take a look at our appetizer menu?</string>
+    <string name="button_oh_yeah">Oh yeah!</string>
+
+    <string name="appetizer_order_confirmation_dialog">We go your order of %s !</string>
 
 </resources>
