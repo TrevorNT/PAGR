@@ -1,9 +1,3 @@
-<?php
-	// The namespace is used for security by encapsulation.
-	// Basically, now the exec statement will only call functions
-	// in this namespace (on this page).
-	namespace pagr\app_bridge;
-?>
 <?php 
 	/**
 	 * application_bridge.php
@@ -21,12 +15,23 @@
 	 *
 	 * All remaining fields are dependent on the pagr_exec you're calling:
 	 * 
-	 * (Insert values needed here)
+	 *      $_REQUEST field      |      What it is      |      Functions using it
+	 * --------------------------+----------------------+------------------------------
+	 * 		handset_id			 |  Android handset ID  |			all
+	 * --------------------------+----------------------+------------------------------
+	 *		reservation_id		 |	PAGR reservation ID | create_reservation returns, 
+	 *							 |                      | get_, modify_reservation uses
 	 *
 	 * @author Trevor Toryk
 	 * @license Proprietary
 	 * @package com.pagr.server
 	 */
+?>
+<?php
+	// The namespace is used for security by encapsulation.
+	// Basically, now the exec statement will only call functions
+	// in this namespace (on this page).
+	namespace pagr\app_bridge;
 ?>
 <?php
 	function create_reservation() {
@@ -55,6 +60,7 @@
 ?>
 <?php
 	// Simply calls the function given in $_REQUEST['pagr_exec'] provided
-	// it is within this namespace.
+	// it is within this namespace.  (And provided it exists <_< )
+	if (!isset($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined!');
 	call_user_func("pagr\app_bridge\\" . $_REQUEST['pagr_exec']);
 ?>
