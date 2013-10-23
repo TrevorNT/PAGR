@@ -71,16 +71,23 @@ function TGPrioritySort($a,$b) {
 
 class Restaurant {
     public $TableGroups;
+    public $PreviousTimes;
 
     public function __construct() {
         $this->TableGroups = array(array());
+        $this->PreviousTimes = array(array());
     }
 
     public function addTableGroup($Size,$Tables) {
         $this->TableGroups[$Size][] = new TableGroup($Size,$Tables);
         usort($this->TableGroups[$Size],"TGPrioritySort");
     }
-
+    /*
+     *This is the working version of Restaurant::FindOpenGroup()
+     *I am commenting it out to work on a new version that will 
+     *incorporate the new Group class
+     */
+    /*
     public function FindOpenGroup($Size) {
         $TableSize = $Size;
         if ( !isset($this->TableGroups[$Size]) ) {
@@ -107,7 +114,55 @@ class Restaurant {
         }
         //No way to seat. Must calculate next expected opening.
         echo date("H\:i\:s",$CurrentGroup->TimeSeated) . ": " . $Size . " people could not be seated! Must calculate next expected opening!" . "<br>";
+    }*/
+    public function FindOpenGroup($Party) {
+        $TableSize = $Party->Size;
+        if ( !isset($this->TableGroups[$Party->Size]) ) {
+            $result = isset($this->TableGroups[++$TableSize]);
+            while ( !$result ) {
+                $result = isset($this->TableGroups[++$TableSize]);
+            }
+        }
+        $HoldCurrentGroup;
+        foreach ( $this->TableGroups[$TableSize] as $CurrentGroup ) {
+            $HoldCurrentGroup = $CurrentGroup;
+            if ( $CurrentGroup->Occupied == false ) {
+                foreach ( $CurrentGroup->Tables as $CurrentTable1 ) {
+                    if ( $CurrentTable1->Occupied == true ) {
+                        continue 2;
+                    }
+                }
+                $CurrentGroup->InUse(time());
+                echo date("H\:i\:s",$CurrentGroup->TimeSeated) . ": " . $Party->Size . ' people were seated at table(s): ';
+                foreach ( $CurrentGroup->Tables as $CurrentTable2 ) {
+                    echo $CurrentTable2->id . ' ';
+                }
+                echo "<br>";
+                return;
+            }
+        }
+        //No way to seat. Must calculate next expected opening.
+        echo date("H\:i\:s",$HoldCurrentGroup->TimeSeated) . ": " . $Party->Size . " people could not be seated! Must calculate next expected opening!" . "<br>";
     }
+}
+
+class Party {
+    public $Size;
+    public $PhoneNumber;
+
+    public function __construct($Size,$PhoneNumber) {
+        $this->Size = $Size;
+        $this->PhoneNumber = $PhoneNumber;
+    }
+}
+
+class Reservation extends Party {
+    public $ReservationTime;
+}
+
+class WalkIn extends Party {
+    public $TimePlaced;
+    public $TimeSeated;
 }
 
 //Define Restaurant
@@ -147,13 +202,17 @@ $R1->addTableGroup(10,array($T9,$T10));
 $R1->addTableGroup(6,array($T1,$T2,$T3));
 $R1->addTableGroup(6,array($T2,$T3,$T4));
 
-//Attempt to seat groups
-$R1->FindOpenGroup(4);
-$R1->FindOpenGroup(4);
-$R1->FindOpenGroup(8);
-$R1->FindOpenGroup(8);
-$R1->FindOpenGroup(3);
-$R1->FindOpenGroup(8);
+//Define Parties
+$P1 = new Party(4,9005551111);
+$P2 = new Party(6,9005552222);
+$P3 = new Party(9,9005553333);
+$P4 = new Party(2,9005554444);
+
+//Attempt to seat Parties
+$R1->FindOpenGroup($P1);
+$R1->FindOpenGroup($P2);
+$R1->FindOpenGroup($P3);
+$R1->FindOpenGroup($P4);
 
 
 
