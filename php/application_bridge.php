@@ -15,12 +15,12 @@
 	 *
 	 * All remaining fields are dependent on the pagr_exec you're calling:
 	 * 
-	 *      $_REQUEST field      |      What it is      |      Functions using it
-	 * --------------------------+----------------------+------------------------------
-	 * 		handset_id			 |  Android handset ID  |			all
-	 * --------------------------+----------------------+------------------------------
-	 *		reservation_id		 |	PAGR reservation ID | create_reservation returns, 
-	 *							 |                      | get_, modify_reservation uses
+	 *      $_REQUEST field     |      What it is
+	 * -------------------------+-----------------------
+	 *      handset_id          |  Android handset ID
+	 * -------------------------+-----------------------
+	 *      reservation_id      |  PAGR reservation ID
+	 * 
 	 *
 	 * @author Trevor Toryk
 	 * @license Proprietary
@@ -36,26 +36,84 @@
 <?php
 	function create_reservation() {
 		echo "create a reservation!";
+		
+		// This function gives a handset a reservation.
+		// if (not exists(reservation_id for given handset_id))
+		//		create new reservation;
+		//		return new_reservation_id;
+		// else
+		//		return -1;
 	}
 	
-	function get_reservation() {
-		echo "get a reservation!";
+    function get_reservation() {
+        echo "get a reservation!";
+		
+		// This function gets reservation details for a given reservation_id.
+		// if (exists(reservation_id))
+		//		get reservation_details from DB;
+		//		return reservation_details;
+		// else
+		//		return -2;
 	}
 	
 	function modify_reservation() {
 		echo "mod a reservation!";
+		
+		// This function allows you to modify a reservation time.
+		// if (exists(reservation_id) and exists(reservation_new_time))
+		//		set reservation_time to DB;
+		//		return true;
+		// else
+		//		return -3;
 	}
 	
-	function create_order() {
+	function create_update_order() {
 		echo "create an order!";
+		
+		// This function allows you to create a new order for a reservation (or
+		// modify an existing one by setting a new order).
+		// if (exists(order_id))
+		//		set order_details to DB;
+		//		return true;
+		// else if (not exists(order_id) and exists(new_order_details))
+		//		create new order_details;
+		//		return new_order_id;
+		// else
+		//		return -4;
 	}
 	
 	function get_order() {
 		echo "get an order!";
+		
+		// This function allows you to get the current order for the user.
+		// if (exists(order_id))
+		//		get order_details from DB;
+		//		return order_details;
+		// else
+		//		return "";
+		//
+		// In this case, an empty string simply means "no data".  It could be
+		// that the handset doesn't have an order out, or that the handset also
+		// has no reservation.
+	}
+        
+	function should_page() {
+		// PRECONDITION: check passed variables
+		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		
+		// This function tells the handset to page the user.
+		// if (exists(reservation_id))
+		//		get should_ping from DB;
+		//		return should_ping;
 	}
 	
-	function modify_order() {
-		echo "mod an order!";
+	function ack_page() {
+		// This function tells the handset to stop paging the user.  (It is
+		// called from the handset to acknowledge that the user has picked up
+		// the page.)
+		// if (exists(reservation_id))
+		//		set should_ping = 0 to DB;
+		//		return true;
 	}
 ?>
 <?php
