@@ -17,6 +17,9 @@ Author: Jacob Zadnik
     0.4.0:
         - Added Party class and its extensions: the Reservation and WalkIn classes.
         - Modified Restaurant::FindOpenGroup() to take this new Group opject as a parameter
+    
+    0.4.1:
+        - Fixed bug with time output if the group could not be seated
           
 
 ##############################

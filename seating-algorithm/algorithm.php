@@ -5,7 +5,7 @@
  *@author Jacob Zadnik <jacobszadnik@gmail.com>
  *@package com.pagr.server
  *@license proprietary
- *@version 0.3.0
+ *@version 0.4.1
  */
 
 class Table {
@@ -125,7 +125,6 @@ class Restaurant {
         }
         $HoldCurrentGroup;
         foreach ( $this->TableGroups[$TableSize] as $CurrentGroup ) {
-            $HoldCurrentGroup = $CurrentGroup;
             if ( $CurrentGroup->Occupied == false ) {
                 foreach ( $CurrentGroup->Tables as $CurrentTable1 ) {
                     if ( $CurrentTable1->Occupied == true ) {
@@ -142,7 +141,7 @@ class Restaurant {
             }
         }
         //No way to seat. Must calculate next expected opening.
-        echo date("H\:i\:s",$HoldCurrentGroup->TimeSeated) . ": " . $Party->Size . " people could not be seated! Must calculate next expected opening!" . "<br>";
+        echo date("H\:i\:s",time()) . ": " . $Party->Size . " people could not be seated! Must calculate next expected opening!" . "<br>";
     }
 }
 
@@ -164,6 +163,7 @@ class WalkIn extends Party {
     public $TimePlaced;
     public $TimeSeated;
 }
+
 
 //Define Restaurant
 $R1 = new Restaurant();
@@ -203,17 +203,18 @@ $R1->addTableGroup(6,array($T1,$T2,$T3));
 $R1->addTableGroup(6,array($T2,$T3,$T4));
 
 //Define Parties
-$P1 = new Party(4,9005551111);
-$P2 = new Party(6,9005552222);
-$P3 = new Party(9,9005553333);
-$P4 = new Party(2,9005554444);
+$P1 = new Party(4,1112220000);
+$P2 = new Party(6,1112220001);
+$P3 = new Party(4,1112220002);
+$P4 = new Party(9,1112220003);
+$P5 = new Party(2,1112220004);
 
-//Attempt to seat Parties
+//Seat Parties
 $R1->FindOpenGroup($P1);
 $R1->FindOpenGroup($P2);
 $R1->FindOpenGroup($P3);
 $R1->FindOpenGroup($P4);
-
+$R1->FindOpenGroup($P5);
 
 
 ?>
