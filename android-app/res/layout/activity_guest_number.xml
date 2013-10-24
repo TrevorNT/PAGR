@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/user_greeting"
-        android:id="@+id/textView"
+        android:id="@+id/user_greeting"
         android:layout_marginTop="34dp"
         android:textSize="@dimen/h1"
         android:layout_alignParentTop="true"
@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:ems="5"
-        android:id="@+id/editText"
+        android:id="@+id/edit_guest_number"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/number_of_guests_holdtext"
         android:layout_marginLeft="30dp" />

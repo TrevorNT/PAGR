@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.view.Menu;
 import android.content.Intent;
 
+import edu.rpi.pagr.utils.AppState;
+
 public class MainActivity extends Activity {
 
     @Override
@@ -15,8 +17,8 @@ public class MainActivity extends Activity {
             startActivity(intent);
             finish();
         } else {
-            setContentView(R.layout.activity_main);
-            finish();
+            setContentView(R.layout.activity_no_internet);
+//            finish();
         }
     }
 
@@ -24,8 +26,8 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.settings, menu);
         return true;
     }
-    
+
 }
