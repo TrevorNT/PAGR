@@ -1,4 +1,14 @@
 <!DOCTYPE html>
+
+<?php
+	$guest_con = mysqli_connect("127.0.0.1", "root","","db_guest");
+	if(mysqli_connect_errno($guest_con))
+	{
+		$good =  "Guest Connection Failed";
+	}
+	else
+		$good = "good";
+?>
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
@@ -46,6 +56,8 @@
     <div class="container">
 
       <div class="starter-template">
+	<h2> <?php if($good == 'good')
+		    {echo "Connected to database!";}?> <h2>
         <h1>PAGR Restaurant Control Panel</h1>
       </div>
 
@@ -60,7 +72,7 @@
                     <li> Customer1 </li>
                     <li> Customer2 </li>
                     <li> Customer3 </li>
-                    <li> Customer4 </li>
+                    <li> Customer4 </li> 
                     <li> Customer5 </li>
                     <li> Customer6 </li>
                     <li> Customer7 </li>
@@ -78,13 +90,26 @@
     </div><!-- /.container -->
 
     <div class="col-md-6">
-                <h1 align = "center">ACTIONS</h1>
-                <p align = "center">
-                    <button type="button" class="btn btn-lg btn-primary" onclick = "hello.php">PAGE</button>
-                    <button type="button" class="btn btn-lg btn-success">Get Order</button>
-                    <button type="button" class="btn btn-lg btn-danger">DELETE</button>
+            <h1 align = "center">ACTIONS</h1>
+			<div align = "center" >
+				<form method="Post" action= "query.php">
+					<select name = "customer">
+						<?php 
+							$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests");
+							while ($row = mysqli_fetch_array($sql))
+							{
+								echo "<option value= ".$row['ID'].">" . $row['Guest'] . "</option>";
+							}
+						?>
+					</select>
+					<br>
+					<br>
+					<input type="submit" class="btn btn-lg btn-primary" value = "Page" align = bottom>
+					<input type="button" class="btn btn-lg btn-success" value = "Get Order">
+					<input type="button" class="btn btn-lg btn-danger" value = "DELETE">
+				</form>
+		    </div>
     </div>
-
     <div class="row">
         <div class="col-md-3">
          <div class="panel panel-primary">
