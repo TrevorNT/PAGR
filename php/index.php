@@ -20,10 +20,10 @@
     <title>Restaurant Control Panel</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="media/css/bootstrap.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="bootstrap/Starter%20Template%20for%20Bootstrap_files/starter-template.css" rel="stylesheet">
+    <link href="media/Starter%20Template%20for%20Bootstrap_files/starter-template.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
