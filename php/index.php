@@ -10,6 +10,23 @@
 		$good = "good";
 ?>
 <html lang="en"><head>
+<script type="text/javascript">
+	function addWalkInCust()
+	{
+		WINDOW = window.open("/add_walkin.php","addCust","height = 400, width = 300, menubar = 0, scrollbars = 0")
+		X = (screen.width-300)/2
+		Y = (screen.height-400)/2
+		WINDOW.moveTo(X,Y)
+		WINDOW.focus()
+	}
+
+	function addReservationCust()
+	{
+		window.open("/add_reservation.php","addCust","height = 800, width = 500, menubar = 0, scrollbars = 0")
+	}
+
+</script>
+
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,7 +63,7 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
+            <li class="active"><a href="/">Home</a></li>
             <li><a href="#about">About</a></li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -69,22 +86,19 @@
                 </div>
                 <div class="panel-body">
                   <ol>
-                    <li> Customer1 </li>
-                    <li> Customer2 </li>
-                    <li> Customer3 </li>
-                    <li> Customer4 </li> 
-                    <li> Customer5 </li>
-                    <li> Customer6 </li>
-                    <li> Customer7 </li>
-                    <li> Customer8 </li>
-                    <li> Customer9 </li>
-                    <li> Customer10 </li>
+		  			<?php
+						$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests WHERE Time IS NULL ORDER BY ID");
+						while ($row = mysqli_fetch_array($sql))
+						{
+							echo "<li>   ".$row['ID']."  ". $row['Guest'] . "</li>";
+						}
+					?>
                   </ol>
                 </div>
               </div>
 
           <p align = "center">
-            <button type="button" class="btn btn-lg btn-default">ADD+</button>
+            <button type="button" onclick="addWalkInCust()" class="btn btn-lg btn-default">ADD+</button>
           </p>
 
     </div><!-- /.container -->
@@ -98,7 +112,7 @@
 							$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests");
 							while ($row = mysqli_fetch_array($sql))
 							{
-								echo "<option value= ".$row['ID'].">" . $row['Guest'] . "</option>";
+								echo "<option value= ".$row['ID'].">".$row['ID']."  ". $row['Guest'] . "</option>";
 							}
 						?>
 					</select>
@@ -118,17 +132,13 @@
                 </div>
                 <div class="panel-body">
                   <ol>
-                    <li> Customer1 </li>
-                    <li> Customer2 </li>
-                    <li> Customer3 </li>
-                    <li> Customer4 </li>
-                    <li> Customer5 </li>
-                    <li> Customer6 </li>
-                    <li> Customer7 </li>
-                    <li> Customer8 </li>
-                    <li> Customer9 </li>
-                    <li> Customer10 </li>
-	            <li> <?php print "Hello World" ?> </li>
+		  			<?php
+						$sql = mysqli_query($guest_con, "SELECT ID, Guest, Time FROM Guests WHERE Time IS NOT NULL ORDER BY TIME");
+						while ($row = mysqli_fetch_array($sql))
+						{
+							echo "<li>   ".$row['ID']."  ". $row['Guest'] ."  ".$row['Time']."</li>";
+						}
+					?>
                   </ol>
                 </div>
          </div>
