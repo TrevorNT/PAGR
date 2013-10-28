@@ -7,10 +7,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockActivity;
+
 /**
  * Created by Daniel Zhao on 9/25/13.
  */
-public class MakeReservationActivity extends Activity {
+public class MakeReservationActivity extends SherlockActivity {
 
     private String WAITING_TIME;
     private TextView waiting_time_text;

@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
+        android:text="@string/guest_name_holdtext"
         android:id="@+id/textView"
         android:layout_alignBottom="@+id/editText"
         android:layout_alignParentLeft="true" />
@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:text="@string/placeholder_name_guest"
         android:ems="10"
         android:id="@+id/editName"
         android:layout_alignParentTop="true"

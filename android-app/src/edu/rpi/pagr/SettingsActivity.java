@@ -1,18 +1,21 @@
 package edu.rpi.pagr;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
-import android.app.Activity;
 import android.support.v4.app.NavUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
-public class SettingsActivity extends Activity {
+import com.actionbarsherlock.app.SherlockActivity;
+
+public class SettingsActivity extends SherlockActivity {
 
     private EditText nameText;
     private Button button_save;
@@ -28,6 +31,7 @@ public class SettingsActivity extends Activity {
     // Keys for storing the "latitude and longitude" flag in shared preferences
     public static final String KEY_SAVED_NAME = "edu.rpi.pagr.KEY_SAVED_NAME";
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +67,7 @@ public class SettingsActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.settings, menu);
+        getSupportMenuInflater().inflate(R.menu.settings, menu);
         return true;
     }
 

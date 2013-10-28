@@ -33,6 +33,8 @@
     <string name="title_activity_settings">MainActivity</string>
 
     <!-- Settings Activity -->
+    <string name="guest_name_holdtext">Your Name: </string>
     <string name="button_save">Save</string>
+    <string name="placeholder_name_guest">Guest</string>
 
 </resources>

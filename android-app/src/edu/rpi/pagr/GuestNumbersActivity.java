@@ -1,18 +1,17 @@
 package edu.rpi.pagr;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.actionbarsherlock.app.SherlockActivity;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -28,11 +27,14 @@ import org.apache.http.util.EntityUtils;
 import java.util.ArrayList;
 
 import edu.rpi.pagr.utils.GatewayConnectionUtils;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Created by Daniel Zhao on 9/23/13.
  */
-public class GuestNumbersActivity extends Activity {
+public class GuestNumbersActivity extends SherlockActivity {
     private Button button_ok;
     private TextView user_greeting_text;
     private EditText edit_number_of_guests;
@@ -145,7 +147,7 @@ public class GuestNumbersActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.settings, menu);
+        getSupportMenuInflater().inflate(R.menu.settings, menu);
         return true;
     }
 }

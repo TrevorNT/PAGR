@@ -11,11 +11,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockActivity;
+
 import edu.rpi.pagr.misc.CustomListAdapter;
 import edu.rpi.pagr.misc.AppetizerItem;
 import edu.rpi.pagr.service.NotificationService;
 
-public class AppetizerListActivity extends Activity {
+public class AppetizerListActivity extends SherlockActivity {
 
     private Button button_submit_order;
 

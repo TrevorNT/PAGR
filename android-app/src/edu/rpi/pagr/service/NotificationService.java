@@ -46,7 +46,7 @@ public class NotificationService extends Service {
         super.onDestroy();
         if(!isRunning){
             mthread.interrupt();
-            mthread.stop();
+//            mthread.stop();
         }
     }
 
@@ -107,6 +107,7 @@ public class NotificationService extends Service {
                 if (shouldPage != null) {
                     notifyUser();
                     isRunning = false;
+                    onDestroy();
                 }
             }
         }
