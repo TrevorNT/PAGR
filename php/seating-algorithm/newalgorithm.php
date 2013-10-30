@@ -8,15 +8,6 @@
  *@version 0.5.0
  */
 
-function sortTG($A, $B) {
-    $SIZEA = sizeof($A->TABLES);
-    $SIZEB = sizeof($B->TABLES);
-    if ( $SIZEA == $SIZEB ) {
-        return 0;
-    }
-    return ($SIZEA < $SIZEB) ? -1 : 1;
-}
-
 class Table {
     public $ID;
     public $SIZE;
@@ -76,7 +67,6 @@ class Restaurant {
 
     public function addTableGroup ($ID,$SIZE,$TABLES) {
         $this->TABLEGROUPS[$SIZE][] = new TableGroup($ID,$SIZE,$TABLES);
-        usort($this->TABLEGROUPS[$SIZE], "sortTG");
     }
 
     public function findBestTableGroup ($PARTY) {
@@ -101,7 +91,7 @@ class Restaurant {
 
     public function seatGroup($PARTY,&$TABLEGROUP) {
         if ( $TABLEGROUP == NULL ) {
-            echo "Party " . $PARTY->ID . " was not able to be seated." . "<br>";
+            echo "Could not seat group!" . "<br>";
             return;
         }
         echo "Party " . $PARTY->ID . " was seated at tables: ";
@@ -119,8 +109,6 @@ class Restaurant {
     }
 
 }
-
-
 
 class Party {
     public $ID;
@@ -194,11 +182,11 @@ printStatusOfTables($Tables);
 
 $PartyID = 1;
 $P1 = array();
-$P1[] = new Party($PartyID++, 4);//party 1
-$P1[] = new Party($PartyID++, 5);//party 2
-$P1[] = new Party($PartyID++, 9);//party 3
-$P1[] = new Party($PartyID++, 2);//party 4
-$P1[] = new Party($PartyID++, 1);//party 5
+$P1[] = new Party($PartyID++, 4);
+$P1[] = new Party($PartyID++, 5);
+$P1[] = new Party($PartyID++, 9);
+$P1[] = new Party($PartyID++, 2);
+$P1[] = new Party($PartyID++, 1);
 
 foreach ( $P1 as $CURRENTPARTY ) {
     $R->seatGroup($CURRENTPARTY, $R->findBestTableGroup($CURRENTPARTY));
@@ -211,6 +199,7 @@ foreach ( $P1 as $CURRENTPARTY ) {
         $R->unseatGroup($CURRENTPARTY->SEATEDAT);
     }
 }
+
 
 printStatusOfTables($Tables);
 
