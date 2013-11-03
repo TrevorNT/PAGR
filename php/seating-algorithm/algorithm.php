@@ -102,9 +102,18 @@ class Restaurant {
     public function seatGroup($PARTY,&$TABLEGROUP) {
         if ( $TABLEGROUP == NULL ) {
             echo "Party " . $PARTY->ID . " was not able to be seated." . "<br>";
+            //calculate average meal time for parties of this size
+            $sum = 0;
+            foreach ( $this->MEALTIMESTATS[$PARTY->SIZE] as $CURRENTSTAT )
+            {
+                $sum = $sum + $CURRENTSTAT;
+            }
+            $sum = $sum/count($this->MEALTIMESTATS[$PARTY->SIZE]);
+
+            echo "Average meal time for parties of this size is: " . $sum . "<br>";
             return;
         }
-        echo "Party " . $PARTY->ID . " was seated at tables: ";
+        echo "Party " . $PARTY->ID . " with " . $PARTY->SIZE . " people was seated at tables: ";
         foreach ($TABLEGROUP->TABLES as $CURRENTTABLE ) {
             echo $CURRENTTABLE->ID . " ";
         }
@@ -135,6 +144,14 @@ class Party {
         $this->SIZE = $SIZE;
         $this->SEATED = false;
     }
+}
+
+class WalkIn extends Party {
+    public $CHECKINTIME;
+}
+
+class Reservation extends Party {
+    public $RESERVATIONTIME;
 }
 
 //functions for testing
@@ -188,30 +205,81 @@ $R->addTableGroup($TableGroupID++,10,array($Tables[8],$Tables[9]));
 $R->addTableGroup($TableGroupID++,6,array($Tables[0],$Tables[1],$Tables[2]));
 $R->addTableGroup($TableGroupID++,6,array($Tables[1],$Tables[2],$Tables[3]));
 
+//make some mock meal time statistics
+//party size of 2
+$R->MEALTIMESTATS[2][] = 25;
+$R->MEALTIMESTATS[2][] = 25;
+$R->MEALTIMESTATS[2][] = 25;
+$R->MEALTIMESTATS[2][] = 25;
+$R->MEALTIMESTATS[2][] = 25;
+$R->MEALTIMESTATS[2][] = 25;
+//party size of 3
+$R->MEALTIMESTATS[3][] = 35;
+$R->MEALTIMESTATS[3][] = 25;
+$R->MEALTIMESTATS[3][] = 35;
+$R->MEALTIMESTATS[3][] = 45;
+$R->MEALTIMESTATS[3][] = 35;
+//party size of 4
+$R->MEALTIMESTATS[4][] = 45;
+$R->MEALTIMESTATS[4][] = 45;
+$R->MEALTIMESTATS[4][] = 45;
+$R->MEALTIMESTATS[4][] = 55;
+$R->MEALTIMESTATS[4][] = 75;
+//party size of 5
+$R->MEALTIMESTATS[5][] = 35;
+$R->MEALTIMESTATS[5][] = 45;
+$R->MEALTIMESTATS[5][] = 45;
+$R->MEALTIMESTATS[5][] = 45;
+$R->MEALTIMESTATS[5][] = 35;
+//party size of 6
+$R->MEALTIMESTATS[6][] = 55;
+$R->MEALTIMESTATS[6][] = 55;
+$R->MEALTIMESTATS[6][] = 65;
+$R->MEALTIMESTATS[6][] = 55;
+$R->MEALTIMESTATS[6][] = 45;
+//party size of 7
+$R->MEALTIMESTATS[7][] = 75;
+$R->MEALTIMESTATS[7][] = 75;
+//party size of 9
+$R->MEALTIMESTATS[9][] = 90;
+$R->MEALTIMESTATS[9][] = 85;
+
+
+
+
 
 //should be all available
 printStatusOfTables($Tables);
 
+//Make parties
 $PartyID = 1;
 $P1 = array();
-$P1[] = new Party($PartyID++, 4);//party 1
-$P1[] = new Party($PartyID++, 5);//party 2
-$P1[] = new Party($PartyID++, 9);//party 3
-$P1[] = new Party($PartyID++, 2);//party 4
+$P1[] = new Party($PartyID++, 6);//party 1
+$P1[] = new Party($PartyID++, 6);//party 2
+$P1[] = new Party($PartyID++, 6);//party 3
+$P1[] = new Party($PartyID++, 6);//party 4
 $P1[] = new Party($PartyID++, 1);//party 5
+$P1[] = new Party($PartyID++, 2);//party 6
+$P1[] = new Party($PartyID++, 6);//party 7
+$P1[] = new Party($PartyID++, 1);//party 8
 
+//Seat all of the parties
 foreach ( $P1 as $CURRENTPARTY ) {
     $R->seatGroup($CURRENTPARTY, $R->findBestTableGroup($CURRENTPARTY));
 }
 
+//Should have tables occupied
 printStatusOfTables($Tables);
 
+//unseat all of the parties
+// that are seated
 foreach ( $P1 as $CURRENTPARTY ) {
     if ( $CURRENTPARTY->SEATED == true ) {
         $R->unseatGroup($CURRENTPARTY->SEATEDAT);
     }
 }
 
+//Should have all available
 printStatusOfTables($Tables);
 
 ?>
