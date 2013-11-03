@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 
 <?php
-	$guest_con = mysqli_connect("127.0.0.1", "root","","db_guest");
-	if(mysqli_connect_errno($guest_con))
+	include "pagr_db.php";
+	$PAGR_database = get_pagr_db_connection();
+	if(mysqli_connect_errno($PAGR_database))
 	{
 		$good =  "Guest Connection Failed";
 	}
@@ -87,10 +88,10 @@
                 <div class="panel-body">
                   <ol>
 		  			<?php
-						$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests WHERE Time IS NULL ORDER BY ID");
-						while ($row = mysqli_fetch_array($sql))
+						$table = $PAGR_database->query("SELECT patron_id, name FROM patrons_t WHERE reservation_time IS NULL ORDER BY patron_id");
+						while ($row = mysqli_fetch_array($table))
 						{
-							echo "<li>   ".$row['ID']."  ". $row['Guest'] . "</li>";
+							echo "<li>   ".$row['patron_id']."  ". $row['name'] . "</li>";
 						}
 					?>
                   </ol>
@@ -106,13 +107,13 @@
     <div class="col-md-6">
             <h1 align = "center">ACTIONS</h1>
 			<div align = "center" >
-				<form method="Post" action= "query.php">
+				<form method="Post" action= "action_button.php">
 					<select name = "customer">
 						<?php 
-							$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests");
-							while ($row = mysqli_fetch_array($sql))
+							$table = $PAGR_database->query("SELECT patron_id, name FROM patrons_t");
+							while ($row = mysqli_fetch_array($table))
 							{
-								echo "<option value= ".$row['ID'].">".$row['ID']."  ". $row['Guest'] . "</option>";
+								echo "<option value= ".$row['patron_id'].">".$row['patron_id']."  ". $row['name'] . "</option>";
 							}
 						?>
 					</select>
@@ -133,10 +134,10 @@
                 <div class="panel-body">
                   <ol>
 		  			<?php
-						$sql = mysqli_query($guest_con, "SELECT ID, Guest, Time FROM Guests WHERE Time IS NOT NULL ORDER BY TIME");
-						while ($row = mysqli_fetch_array($sql))
+						$table = $PAGR_database->query("SELECT patron_id, name, reservation_time FROM patrons_t WHERE reservation_time IS NOT NULL ORDER BY reservation_time");
+						while ($row = mysqli_fetch_array($table))
 						{
-							echo "<li>   ".$row['ID']."  ". $row['Guest'] ."  ".$row['Time']."</li>";
+							echo "<li>   ".$row['patron_id']."  ". $row['name'] ."  ".$row['reservation_time']."</li>";
 						}
 					?>
                   </ol>
