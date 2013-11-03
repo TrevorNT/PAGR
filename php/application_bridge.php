@@ -34,6 +34,11 @@
 	namespace pagr\app_bridge;
 ?>
 <?php
+	/**
+	 * Creates a new reservation given $_REQUEST['handset_id'].
+	 * 
+	 * @return Integer A positive integer representing the reservation ID if successful, -1 if not.
+	 */
 	function create_reservation() {
 		echo "create a reservation!";
 		
@@ -45,6 +50,11 @@
 		//		return -1;
 	}
 	
+	/**
+	 * Prints reservation details in a <property>:<value>; format.  Requires $_REQUEST['reservation_id'].
+	 * 
+	 * @return String A long string about reservation details on multiple lines, or -2 if the reservation doesn't exist.
+	 */
     function get_reservation() {
         echo "get a reservation!";
 		
@@ -56,6 +66,12 @@
 		//		return -2;
 	}
 	
+	/**
+	 * Make a change to the reservation using $_REQUEST['reservation_id'] and
+	 * $_REQUEST['reservation_time'].
+	 * 
+	 * @return Boolean True if the reservation time change was successful, -3 if not.
+	 */
 	function modify_reservation() {
 		echo "mod a reservation!";
 		
@@ -67,6 +83,9 @@
 		//		return -3;
 	}
 	
+	/**
+	 * 
+	 */
 	function create_update_order() {
 		echo "create an order!";
 		
@@ -82,6 +101,9 @@
 		//		return -4;
 	}
 	
+	/**
+	 * 
+	 */
 	function get_order() {
 		echo "get an order!";
 		
@@ -96,7 +118,10 @@
 		// that the handset doesn't have an order out, or that the handset also
 		// has no reservation.
 	}
-        
+	
+	/**
+	 * 
+	 */
 	function should_page() {
 		// PRECONDITION: check passed variables
 		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
@@ -107,6 +132,9 @@
 		//		return should_ping;
 	}
 	
+	/**
+	 * 
+	 */
 	function ack_page() {
 		// This function tells the handset to stop paging the user.  (It is
 		// called from the handset to acknowledge that the user has picked up
