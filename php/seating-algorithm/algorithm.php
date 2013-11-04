@@ -120,11 +120,15 @@ class Restaurant {
         echo "<br>";
         $PARTY->SEATEDAT = $TABLEGROUP;
         $PARTY->SEATED = true;
+        $PARTY->STARTEATINGTIME = time();
         $TABLEGROUP->makeOccupied();
     }
 
-    public function unseatGroup(&$TABLEGROUP) {
+    public function unseatGroup($PARTY) {
+        $TABLEGROUP = $PARTY->SEATEDAT;
         $TABLEGROUP->makeUnoccupied();
+        $PARTY->ENDEATINGTIME = time();
+        //$this->MEALTIMESTATS[$PARTY->SIZE][] = $PARTY->ENDEATINGTIME - $PARTY->STARTEATINGTIME;
     }
 
 }
@@ -166,6 +170,12 @@ function printStatusOfTables($TABLES) {
         }
     }
     echo "<br>";
+}
+
+function printMealTimeStats($RESTAURANT) {
+    foreach ( $this->MEALTIMESTATS as $PARTYSIZE ) {
+        
+    }
 }
 
 //Make an array of tables for our mock up restaurant
@@ -275,7 +285,7 @@ printStatusOfTables($Tables);
 // that are seated
 foreach ( $P1 as $CURRENTPARTY ) {
     if ( $CURRENTPARTY->SEATED == true ) {
-        $R->unseatGroup($CURRENTPARTY->SEATEDAT);
+        $R->unseatGroup($CURRENTPARTY);
     }
 }
 
