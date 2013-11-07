@@ -21,7 +21,14 @@
 	 * -------------------------+-----------------------
 	 *      reservation_id      |  PAGR reservation ID
 	 * 
-	 *
+	 * Returns: this page returns a limited number of possible results:
+	 * 
+	 * "OK" - server has acknowledged your request.
+	 * "ERROR" - there was an error processing your request (there will be a
+	 *			message after it).
+	 * "0" - only used in should_page(), this means no, should not page.
+	 * "1" - only used in should_page(), this means yes, should page.
+	 * 
 	 * @author Trevor Toryk
 	 * @license Proprietary
 	 * @package com.pagr.server
@@ -32,6 +39,7 @@
 	// Basically, now the exec statement will only call functions
 	// in this namespace (on this page).
 	namespace pagr\app_bridge;
+	include 'pagr_db.php';
 ?>
 <?php
 	/**
@@ -86,6 +94,13 @@
 	/**
 	 * 
 	 */
+	function check_wait_time() {
+		
+	}
+	
+	/**
+	 * 
+	 */
 	function create_update_order() {
 		echo "create an order!";
 		
@@ -122,31 +137,94 @@
 	/**
 	 * 
 	 */
-	function should_page() {
-		// PRECONDITION: check passed variables
-		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+	function get_item() {
 		
-		// This function tells the handset to page the user.
-		// if (exists(reservation_id))
-		//		get should_ping from DB;
-		//		return should_ping;
 	}
 	
 	/**
+	 * This function tells you whether or not you should page.
 	 * 
+	 * Request variables to be set:
+	 *		handset_id: the handset ID of the mobile device.
+	 *		reservation_id: the ID of the patron's reservation.
+	 * 
+	 * Both must be set to check a page.
+	 * 
+	 * @return string "0" if don't page, "1" if page, "ERROR" on error.
+	 */
+	function should_page() {
+		// PRECONDITION: handset_id, reservation_id must be specified
+		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		
+		// Connect to the database, set the local variables
+		$DB = get_pagr_db_connection();
+		$HANDSET_ID = $_REQUEST['handset_id'];
+		$PATRON_ID = $_REQUEST['reservation_id'];
+		
+		// Simple injection attack prevention; by removing a semicolon, you can
+		// prevent a SQL injection attack by creating a string that is not
+		// SQL-compliant and will force a MySQL error.
+		$HANDSET_ID = str_replace(";", "", $HANDSET_ID);
+		
+		// Run the query, return the result
+		$RESULT = $DB->query("SELECT page FROM patrons_t WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID LIMIT 1;");
+		if ($RESULT == false) {
+			$ERROR = $DB->error;
+			echo "ERROR: $ERROR";
+		}
+		else {
+			echo $RESULT->fetch_row()[0];
+		}
+		
+		// Close the connection.
+		$DB->close();
+	}
+	
+	/**
+	 * This function acknowledges a page request.
+	 * 
+	 * Request variables to be set:
+	 *		handset_id: the handset ID of the mobile device.
+	 *		reservation_id: the ID of the patron's reservation.
+	 * 
+	 * Both must be set to acknowledge! (that way it's much harder to falsify an
+	 * acknowledgement).
+	 * 
+	 * @return string "OK" if the acknowledgement went through, "ERROR" if not.
 	 */
 	function ack_page() {
-		// This function tells the handset to stop paging the user.  (It is
-		// called from the handset to acknowledge that the user has picked up
-		// the page.)
-		// if (exists(reservation_id))
-		//		set should_ping = 0 to DB;
-		//		return true;
+		// PRECONDITION: handset_id, reservation_id must be specified
+		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		
+		// Connect to the database, set the local variables
+		$DB = get_pagr_db_connection();
+		$HANDSET_ID = $_REQUEST['handset_id'];
+		$PATRON_ID = $_REQUEST['reservation_id'];
+		
+		// Simple injection attack prevention; by removing a semicolon, you can
+		// prevent a SQL injection attack by creating a string that is not
+		// SQL-compliant and will force a MySQL error.
+		$HANDSET_ID = str_replace(";", "", $HANDSET_ID);
+		
+		// Run the query.
+		$RESULT = $DB->query("UPDATE patrons_t SET page = 0 WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID;");
+		if ($RESULT == true) {
+			echo "OK";
+		}
+		else {
+			$ERROR = $DB->error;
+			echo "ERROR: $ERROR";
+		}
+		
+		// Close the connection.
+		$DB->close();
 	}
 ?>
 <?php
 	// Simply calls the function given in $_REQUEST['pagr_exec'] provided
-	// it is within this namespace.  (And provided it exists <_< )
-	if (!isset($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined!');
+	// it is within this namespace.  (And provided it exists.)
+	if (!isset($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined');
 	call_user_func("pagr\app_bridge\\" . $_REQUEST['pagr_exec']);
 ?>

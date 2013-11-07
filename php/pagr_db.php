@@ -51,10 +51,8 @@
 		
 		if (strlen($DB_UNAME) == 0 || strlen($DB_PASS) == 0 || strlen($DB_LOCATION) == 0 || strlen($DB_PORT) == 0) die("ERROR: malformed pagr.ini file!");
 		
-		echo "Connection established!\r\n";
+		//echo "Connection established!\r\n";
 		
 		return new mysqli($DB_LOCATION, $DB_UNAME, $DB_PASS, "pagr_s", $DB_PORT);
 	}
-	
-	$DATABASE = get_pagr_db_connection();
 ?>
