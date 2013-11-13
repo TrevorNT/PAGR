@@ -33,6 +33,13 @@ Author: Jacob Zadnik
         - Seating and unseating parties is working
         - The algorithm to find the best table to seat a
           party at is working       
+
+    0.6.0:
+        - Implemented functionality to calculate average meal time
+        - Added members to the Table and TableGroup class to hold a
+          reservation time
+        - Added a new function, timeX(), that 'speeds up' time passed
+          since the start of the party. Full details in comments in source
           
 ##############################
 ## Version numbering scheme ##
