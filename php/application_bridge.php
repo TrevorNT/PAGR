@@ -45,17 +45,57 @@
 	/**
 	 * Creates a new reservation given $_REQUEST['handset_id'].
 	 * 
-	 * @return Integer A positive integer representing the reservation ID if successful, -1 if not.
+	 * @return Integer A positive integer representing the reservation ID if successful, ERROR if not.
 	 */
 	function create_reservation() {
-		echo "create a reservation!";
+		// PRECONDITION: handset_id, party_size must be specified
+		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (!isset($_REQUEST['party_size'])) die("ERROR: party_size required");
+		if (!isset($_REQUEST['patron_name'])) die("ERROR: patron_name required");
 		
-		// This function gives a handset a reservation.
-		// if (not exists(reservation_id for given handset_id))
-		//		create new reservation;
-		//		return new_reservation_id;
-		// else
-		//		return -1;
+		$PATRON_NAME = $_REQUEST['patron_name'];
+		$PARTY_SIZE = $_REQUEST['party_size'];
+		
+		$RESERVATION_TIME = NULL;
+		
+		// OPTIONAL PRECONDITION: reservation_time specifies a reservation, not a walk-in.
+		// NOTE: reservation_time MUST be in the following format: "YYYY-MM-DD HH:MM:SS"
+		//	(checking this will be reserved to the database though, as it is more efficient)
+		if (isset($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
+		
+		// Connect to the database, set the local variables
+		$DB = get_pagr_db_connection();
+		$HANDSET_ID = $_REQUEST['handset_id'];
+		
+		// Simple injection attack prevention; by removing a semicolon, you can
+		// prevent a SQL injection attack by creating a string that is not
+		// SQL-compliant and will force a MySQL error.
+		$HANDSET_ID = str_replace(";", "", $HANDSET_ID);
+		if (!empty($RESERVATION_TIME)) $RESERVATION_TIME = str_replace(";", "", $RESERVATION_TIME);
+		
+		$RESULT = $DB->query("SELECT count(*) FROM patrons_t WHERE android_id = '$HANDSET_ID'");
+		$EXISTS = $RESULT->fetch_row()[0];
+		if ($EXISTS == 0 && !empty($RESERVATION_TIME)) {
+			$RESULT = $DB->query("INSERT INTO patrons_t(name, party_size, reservation_time, android_id) VALUES ('$PATRON_NAME', $PARTY_SIZE, '$RESERVATION_TIME', '$HANDSET_ID';)");
+			
+			if ($RESULT === false) {
+				die("ERROR: unspecified database error");
+			}
+			
+			$RESULT = $DB->query("SELECT patron_id FROM patrons_t WHERE android_id = '$HANDSET_ID';");
+			echo $RESULT->fetch_row()[0];
+		}
+		else if ($EXISTS == 0) {
+			$RESULT = $DB->query("INSERT INTO patrons_t(name, party_size, android_id) VALUES ('$PATRON_NAME', $PARTY_SIZE, '$HANDSET_ID');");
+			
+			if ($RESULT === false) {
+				die("ERROR: unspecified database error");
+			}
+			
+			$RESULT = $DB->query("SELECT patron_id FROM patrons_t WHERE android_id = '$HANDSET_ID';");
+			echo $RESULT->fetch_row()[0];
+		}
+		else die("ERROR: reservation exists");
 	}
 	
 	/**
@@ -152,7 +192,7 @@
 	 * 
 	 * @return string "0" if don't page, "1" if page, "ERROR" on error.
 	 */
-	function should_page() {
+	function get_page_status() {
 		// PRECONDITION: handset_id, reservation_id must be specified
 		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
 		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
@@ -169,7 +209,7 @@
 		
 		// Run the query, return the result
 		$RESULT = $DB->query("SELECT page FROM patrons_t WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID LIMIT 1;");
-		if ($RESULT == false) {
+		if ($RESULT === false) {
 			$ERROR = $DB->error;
 			echo "ERROR: $ERROR";
 		}
@@ -210,7 +250,7 @@
 		
 		// Run the query.
 		$RESULT = $DB->query("UPDATE patrons_t SET page = 0 WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID;");
-		if ($RESULT == true) {
+		if ($RESULT === true) {
 			echo "OK";
 		}
 		else {
