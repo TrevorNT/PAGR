@@ -27,6 +27,13 @@
 	}
 
 </script>
+<style type="text/css">
+	#table_container
+	{
+		width: 400px
+		border: 1px solid #aaa
+	}
+</style>
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
@@ -72,10 +79,7 @@
     </div>
 
     <div class="container">
-
       <div class="starter-template">
-	<h2> <?php if($good == 'good')
-		    {echo "Connected to database!";}?> <h2>
         <h1>PAGR Restaurant Control Panel</h1>
       </div>
 
@@ -123,6 +127,13 @@
 					<input type="button" class="btn btn-lg btn-success" value = "Get Order">
 					<input type="button" class="btn btn-lg btn-danger" value = "DELETE">
 				</form>
+
+				<br>
+				<h3 align = "center"> Table Setup</h3>
+				<div align = "center" class= "container" id= "table_container">
+					<script type="text/javascript" src="/raphael.js"></script>  
+					<script type="text/javascript" src="/table.js"></script> 
+				</div>
 		    </div>
     </div>
     <div class="row">
