@@ -32,17 +32,6 @@ function timeX($FACTOR) {
 }
 
 function sortTG($A, $B) {
-/**
- *Purpose:
- *
- *
- *Precondition:
- *
- *
- *Postcondition:
- *
- *
- */
     $SIZEA = sizeof($A->TABLES);
     $SIZEB = sizeof($B->TABLES);
     if ( $SIZEA == $SIZEB ) {
@@ -51,10 +40,24 @@ function sortTG($A, $B) {
     return ($SIZEA < $SIZEB) ? -1 : 1;
 }
 
+
+
+class ReservationData{
+    public $STARTTIME;
+    public $ENDTIME;
+    public $PARTY;
+
+    public function __construct($STARTTIME,&$PARTY) {
+        $this->STARTTIME = $STARTTIME;
+        $this->PARTY = $PARTY;
+    }
+}
+
 class Table {
     public $ID;
     public $SIZE;
     public $OCCUPIED;
+    public $RESERVATIONTIMES;
 
     public function __construct($ID,$SIZE) {
         $this->ID = $ID;
@@ -78,6 +81,7 @@ class TableGroup {
     public $OCCUPIED;
     public $TABLES;
     public $RESERVATIONTIMES;
+    public $PARTY;
 
     public function __construct($ID,$SIZE,$TABLES) {
         $this->ID = $ID;
@@ -87,8 +91,9 @@ class TableGroup {
         $this->RESERVATIONTIMES = array();
     }
 
-    public function makeOccupied() {
+    public function makeOccupied(&$PARTY) {
         $this->OCCUPIED = true;
+        $this->PARTY = $PARTY;
         foreach ($this->TABLES as $CURRENTTABLE) {
             $CURRENTTABLE->makeOccupied();
         }
@@ -111,20 +116,21 @@ class Restaurant {
         $this->MEALTIMESTATS = array(array());
     }
 
+
     public function addTableGroup ($ID,$SIZE,$TABLES) {
         $this->TABLEGROUPS[$SIZE][] = new TableGroup($ID,$SIZE,$TABLES);
         usort($this->TABLEGROUPS[$SIZE], "sortTG");
     }
 
-    public function findBestTableGroup ($PARTY) {
-
-        $FASTESEXPECTED;//this will be set to the table that is expected to be cleared the fastest.
-
+    public function findBestTableGroup (&$PARTY) {
         $TABLESIZE = $PARTY->SIZE;
 
         while ( !isset($this->TABLEGROUPS[$TABLESIZE]) ) {
             ++$TABLESIZE;
         }
+
+        $FASTESTAVAILABLE = $this->TABLEGROUPS[$TABLESIZE][0];
+
         foreach ( $this->TABLEGROUPS[$TABLESIZE] as $CURRENTGROUP ) {
             if ( $CURRENTGROUP->OCCUPIED == false ) {
                 foreach ( $CURRENTGROUP->TABLES as $CURRENTTABLE ) {
@@ -137,8 +143,8 @@ class Restaurant {
                 if ( isset($CURRENTGROUP->RESERVATIONTIMES) ) { //if the table has a reservation
                     foreach ( $CURRENTGROUP->RESERVATIONTIMES as $TIME ) {
                         if ( $TIME > time() ) {//if the reservation time is in the future
-                            if ( ($TIME-timeX(60)) > ($this->avgMealTime($PARTY->SIZE)+(600)) ) {   //if the reservation is far enough in the future have 
-                                                                                                    //the table open by then if a group is seated now
+                            if ( ($TIME-timeX(60)) > ($this->avgMealTime($PARTY->SIZE)+(5*60)) ) {//if the reservation is far enough in the future have
+                                                                                                  //the table open by then if a group is seated now
                                 return $CURRENTGROUP;
                             }
                             continue 2;
@@ -148,7 +154,13 @@ class Restaurant {
                 //if no reservations
                 return $CURRENTGROUP;
             }
+            else { // the group is occupied, see how long the wait is going to be!
+                if ( ((($CURRENTGROUP->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) < ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) ) {
+                    $FASTESTAVAILABLE = $CURRENTGROUP;
+                }
+            }
         }
+        $PARTY->EXPECTEDWAIT = ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60));
         return NULL;
     }
 
@@ -157,6 +169,7 @@ class Restaurant {
             echo "Party " . $PARTY->ID . " with " . $PARTY->SIZE . " people was not able to be seated." . "<br>";
             //calculate average meal time for parties of this size
             echo "Average meal time for parties of this size is: " . $this->avgMealTime($PARTY->SIZE) . "<br>";
+            echo "Expected wait time is: " . $PARTY->EXPECTEDWAIT . "<br>";
             return;
         }
         echo "Party " . $PARTY->ID . " with " . $PARTY->SIZE . " people was seated at tables: ";
@@ -167,7 +180,7 @@ class Restaurant {
         $PARTY->SEATEDAT = $TABLEGROUP;
         $PARTY->SEATED = true;
         $PARTY->STARTEATINGTIME = timeX(60);
-        $TABLEGROUP->makeOccupied();
+        $TABLEGROUP->makeOccupied($PARTY);
     }
 
     public function unseatGroup($PARTY) {
@@ -179,6 +192,7 @@ class Restaurant {
 
     public function makeReservation($PARTY,&$TABLEGROUP) {
        $TABLEGROUP->RESERVATIONTIMES[] = $PARTY->RESERVATIONTIME;          
+
     }
 
     public function avgMealTime($PARTYSIZE) {
@@ -192,6 +206,39 @@ class Restaurant {
             return $sum;
     }
 
+
+
+    public function reserveTableGroup(&$PARTY, &$TABLEGROUP) {
+        if ( $TABLEGROUP == NULL ) {
+            echo "CAN NOT MAKE RESERVATION!" . "<br>";
+        }
+        else {
+            foreach ( $TABLEGROUP->RESERVATIONTIMES as $KEY=>$VALUE ) {
+                if ( isset($TABLEGROUP->RESERVATIONTIMES[$KEY+1]) ) { //if there is a reservation time AFTER the one we are looing at                
+                    if ((($VALUE->ENDTIME)>(($PARTY->RESERVATIONTIME)+avgMealTime($PARTY->SIZE)))&&((($PARTY->RESERVATIONTIME)+avgMealTime($PARTY->SIZE))<($TABLEGROUP->RESERVATIONTIMES[$KEY+1]->STARTTIME))) { //if there is enough time between the expected end time of the current reservation and the start of the next one to place the attempted reservation
+                        //make the reservation
+                        $VALUE->RESERVATIONTIMES[] = new ReservationData($PARTY->RESERVATIONTIME,$PARTY);
+                        $PARTY->TABLEGROUPRESERVED = $VALUE;
+                    }
+                    else {  //there is not enough time!
+                        //return NULL
+                        return NULL;
+                    }
+                }
+                else { //the reservation we are looking at is the 'last' one
+                    if ( ($VALUE->ENDTIME)>(($PARTY->RESERVATIONTIME)+avgMealTime($PARTY->SIZE))  ) { //if there is enough time between the espected end time for the current reservation and the one we are tyring to make
+                        //make the reservation
+                        $VALUE->RESERVATIONTIMES[] = new ReservationData($PARTY->RESERVATIONTIME,$PARTY);
+                        $PARTY->TABLEGROUPRESERVED = $VALUE;
+                    }
+                    else {
+                        //return NULL. Cannot make reservation
+                        return NULL;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -203,6 +250,7 @@ class Party {
     public $SEATEDAT;
     public $STARTEATINGTIME;
     public $ENDEATINGTIME;
+    public $EXPECTEDWAIT;
 
     public function __construct($ID,$SIZE) {
         $this->ID = $ID;
@@ -225,6 +273,7 @@ class WalkIn extends Party {
 
 class Reservation extends Party {
     public $RESERVATIONTIME;
+    public $TABLEGROUPRESERVED;
 
     public function __construct($ID,$SIZE,$RESERVATIONTIME) {
         $this->ID = $ID;
@@ -233,6 +282,7 @@ class Reservation extends Party {
         $this->RESERVATIONTIME = $RESERVATIONTIME;
     }
 }
+
 
 //functions for testing
 function printStatusOfTables($TABLES) {
