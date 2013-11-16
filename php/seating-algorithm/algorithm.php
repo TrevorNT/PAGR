@@ -145,6 +145,13 @@ class Restaurant {
         $this->MEALTIMESTATS = array(array());
     }
 
+    /*
+    public function updateTgFromDb($DB) {
+        $size = 1;
+
+        $TGOFSIZE = $DB->query(SELECT table
+    }
+    */
 
     public function addTableGroup ($ID,$SIZE,$TABLES) {
         $this->TABLEGROUPS[$SIZE][] = new TableGroup($ID,$SIZE,$TABLES);
