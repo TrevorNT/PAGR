@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-
+ 
 <?php
 	include "pagr_db.php";
 	$PAGR_database = get_pagr_db_connection();
@@ -14,7 +14,7 @@
 <script type="text/javascript">
 	function addWalkInCust()
 	{
-		WINDOW = window.open("/add_walkin.php","addCust","height = 400, width = 300, menubar = 0, scrollbars = 0")
+		WINDOW = window.open("/add_walkin.php","addCust","height = 400, width = 300, menubar = 0, scrollbars = 0");
 		X = (screen.width-300)/2
 		Y = (screen.height-400)/2
 		WINDOW.moveTo(X,Y)
@@ -23,23 +23,23 @@
 
 	function addReservationCust()
 	{
-		window.open("/add_reservation.php","addCust","height = 800, width = 500, menubar = 0, scrollbars = 0")
+		window.open("/add_reservation.php","addCust","height = 800, width = 500, menubar = 0, scrollbars = 0");
 	}
 
 </script>
 <style type="text/css">
 	#table_container
-	{
+	{ 
 		width: 400px
 		border: 1px solid #aaa
 	}
 </style>
-
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta http-equiv="refresh" content="25" > 
     <link rel="shortcut icon" href="http://getbootstrap.com/assets/ico/favicon.png">
 
     <title>Restaurant Control Panel</title>
@@ -73,6 +73,7 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="#about">About</a></li>
+            <li><a> <font color= "FFFF66">Current Wait Time: <?php echo "" ?> </font></a></li>  
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -109,7 +110,8 @@
     </div><!-- /.container -->
 
     <div class="col-md-6">
-            <h1 align = "center">ACTIONS</h1>
+            <h4 align = "center"> <?php echo "hello world" ?> </h4>
+            <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
 				<form method="Post" action= "action_button.php">
 					<select name = "customer">
@@ -125,15 +127,43 @@
 					<br>
 					<input type="submit" class="btn btn-lg btn-primary" value = "Page" align = bottom>
 					<input type="button" class="btn btn-lg btn-success" value = "Get Order">
-					<input type="button" class="btn btn-lg btn-danger" value = "DELETE">
+					<input type="button" class="btn btn-lg btn-default" value = "Seat Customer"> 
+					<br>
+					<br>
+					<input type="button" class="btn btn-lg btn-danger" value = "DELETE"> 
 				</form>
 
-				<br>
 				<h3 align = "center"> Table Setup</h3>
+				<h4 align = "center"> <font color = "FF6666"><b> RED </b></font> 
+				    tables are <font color = "FF6666"><b>OCCUPIED </b></font> </h4>
+				    
 				<div align = "center" class= "container" id= "table_container">
-					<script type="text/javascript" src="/raphael.js"></script>  
-					<script type="text/javascript" src="/table.js"></script> 
+					<script type="text/javascript" src="/raphael.js"></script>
+					<!-- Call the php driver to create the tables. -->
+					<?php include "tables.php"; createTables($PAGR_database); ?>
 				</div>
+				<form method="Post" action= "unmark_tables.php">
+				    
+				    <h4> Unmark Table:
+				    <select name = "table">
+				    <?php
+				        $OCC_TABLES = $PAGR_database->query("SELECT table_id 
+				                                             FROM table_t
+				                                             WHERE isOccupied = 1");
+				                                             
+				        while ($ROW = mysqli_fetch_array($OCC_TABLES))
+				        {
+				        
+				            
+				            echo '<option value= '.$ROW['table_id'].'> 
+				            Table '.$ROW['table_id']."&nbsp&nbsp&nbsp".'</option>';
+				            
+				        }
+				        
+				    ?>
+				    </select>
+				    <input type="submit" value = "Submit"> 
+				</form>
 		    </div>
     </div>
     <div class="row">
@@ -145,7 +175,10 @@
                 <div class="panel-body">
                   <ol>
 		  			<?php
-						$table = $PAGR_database->query("SELECT patron_id, name, reservation_time FROM patrons_t WHERE reservation_time IS NOT NULL ORDER BY reservation_time");
+						$table = $PAGR_database->query("SELECT patron_id, name, 
+						                                reservation_time FROM patrons_t WHERE 
+						                                reservation_time IS NOT NULL ORDER BY 
+						                                reservation_time");
 						while ($row = mysqli_fetch_array($table))
 						{
 							echo "<li>   ".$row['patron_id']."  ". $row['name'] ."  ".$row['reservation_time']."</li>";
