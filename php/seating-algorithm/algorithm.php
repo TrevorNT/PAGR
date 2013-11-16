@@ -1,7 +1,14 @@
 <html><body>
-<?php
 
-/**
+<?php
+include "pagr_db.php";
+$PAGR_database = get_pagr_db_connection();
+if(mysqli_connect_errno($PAGR_database))
+{
+    $good = "Guest Connection Failed";
+}
+echo $good . "<br>";
+/** 
  *@author Jacob Zadnik <jacobszadnik@gmail.com>
  *@package com.pagr.server
  *@license proprietary
@@ -66,12 +73,15 @@ class Table {
         $this->RESERVATIONTIMES = array();
     }
 
-    public function makeOccupied() {
+    public function makeOccupied($DB) {
         $this->OCCUPIED = true;
+        //$PAGR_database->query("UPDATE 'table_t' SET 'isOccupied'=1 WHERE 'table_id'='".$this->ID."';");
+        $result = $DB->query("UPDATE table_t SET isOccupied=1 WHERE table_id=".$this->ID.";");
     }
 
-    public function makeUnoccupied() {
+    public function makeUnoccupied($DB) {
         $this->OCCUPIED = false;
+        $result = $DB->query("UPDATE table_t SET isOccupied=0 WHERE table_id=".$this->ID.";");
     }
 }
 
@@ -91,19 +101,38 @@ class TableGroup {
         $this->RESERVATIONTIMES = array();
     }
 
-    public function makeOccupied(&$PARTY) {
+    public function makeOccupied(&$PARTY,$DB) {
         $this->OCCUPIED = true;
         $this->PARTY = $PARTY;
         foreach ($this->TABLES as $CURRENTTABLE) {
-            $CURRENTTABLE->makeOccupied();
+            $CURRENTTABLE->makeOccupied($DB);
+        }
+        $result = $DB->query("UPDATE tablegroups_t SET is_occupied=1 WHERE tablegroup_id=".$this->ID.";");
+        $result = $DB->query("UPDATE patron_tablegroup_mapping_t SET patron_id=".$PARTY->ID." WHERE tablegroup_id=".$this->ID.";");
+        $result = $DB->query("SELECT table_id FROM tablegroups_t, table_t WHERE tablegroups_id=".$this->ID.";");
+        while ( $row = mysqli_fetch_array($result))
+        {
+            $resultA = $DB->query("UPDATE table_t SET isOccupied=1 WHERE table_id=".$row['table_id'].";");
         }
     }
 
-    public function makeUnoccupied() {
+    public function makeUnoccupied($DB) {
+        /*
         $this->OCCUPIED = false;
         foreach ($this->TABLES as $CURRENTTABLE) {
             $CURRENTTABLE->makeUnoccupied();
         }
+        */
+        echo "ID is: ".$this->ID."<br>";
+        $result = $DB->query("UPDATE tablegroups_t SET is_occupied=0 WHERE tablegroup_id=".$this->ID.";");
+        $result = $DB->query("SELECT table_id FROM tablegroup_table_mapping_t WHERE tablegroup_id=".$this->ID.";");
+        echo "TEST before while<br>";
+        while ( $row = mysqli_fetch_array($result))
+        {
+            echo "in loop<br>";
+            $resultA = $DB->query("UPDATE table_t SET isOccupied=0 WHERE table_id=".$row['table_id'].";");
+        }
+        echo "TEST2<br>";
     }
 }
 
@@ -129,42 +158,40 @@ class Restaurant {
             ++$TABLESIZE;
         }
 
-        $FASTESTAVAILABLE = $this->TABLEGROUPS[$TABLESIZE][0];
-
-        foreach ( $this->TABLEGROUPS[$TABLESIZE] as $CURRENTGROUP ) {
-            if ( $CURRENTGROUP->OCCUPIED == false ) {
-                foreach ( $CURRENTGROUP->TABLES as $CURRENTTABLE ) {
-                    if ( $CURRENTTABLE->OCCUPIED == true ) {
-                        continue 2;
-                    }
-                }
-                //found group
-                //now check for reservations
-                if ( isset($CURRENTGROUP->RESERVATIONTIMES) ) { //if the table has a reservation
-                    foreach ( $CURRENTGROUP->RESERVATIONTIMES as $TIME ) {
-                        if ( $TIME > time() ) {//if the reservation time is in the future
-                            if ( ($TIME-timeX(60)) > ($this->avgMealTime($PARTY->SIZE)+(5*60)) ) {//if the reservation is far enough in the future have
-                                                                                                  //the table open by then if a group is seated now
-                                return $CURRENTGROUP;
-                            }
+        $FASTESTAVAILABLE = $this->TABLEGROUPS[$TABLESIZE][0]; 
+           foreach ( $this->TABLEGROUPS[$TABLESIZE] as $CURRENTGROUP ) {
+                if ( $CURRENTGROUP->OCCUPIED == false ) {
+                    foreach ( $CURRENTGROUP->TABLES as $CURRENTTABLE ) {
+                      if ( $CURRENTTABLE->OCCUPIED == true ) {
                             continue 2;
                         }
                     }
+                    //found group
+                    //now check for reservations
+                    if ( isset($CURRENTGROUP->RESERVATIONTIMES) ) { //if the table has a reservation
+                        foreach ( $CURRENTGROUP->RESERVATIONTIMES as $TIME ) {
+                            if ( $TIME->STARTTIME > time() ) {//if the reservation time is in the future
+                             if ( ($TIME->STARTTIME-timeX(60)) > ($this->avgMealTime($PARTY->SIZE)+(5*60)) ) {//if the reservation is far enough in the future have
+                                                                                                      //the table open by then if a group is seated now
+                                    return $CURRENTGROUP;
+                                }
+                                continue 2;
+                            }
+                        }
+                    }
+                   //if no reservations
+                    return $CURRENTGROUP;
                 }
-                //if no reservations
-                return $CURRENTGROUP;
-            }
-            else { // the group is occupied, see how long the wait is going to be!
-                if ( ((($CURRENTGROUP->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) < ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) ) {
-                    $FASTESTAVAILABLE = $CURRENTGROUP;
+                else { // the group is occupied, see how long the wait is going to be!
+                  if ( ((($CURRENTGROUP->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) < ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) ) {
+                        $FASTESTAVAILABLE = $CURRENTGROUP;
+                    }
                 }
             }
-        }
         $PARTY->EXPECTEDWAIT = ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60));
         return NULL;
     }
-
-    public function seatGroup($PARTY,&$TABLEGROUP) {
+    public function seatGroup(&$PARTY,&$TABLEGROUP) {
         if ( $TABLEGROUP == NULL ) {
             echo "Party " . $PARTY->ID . " with " . $PARTY->SIZE . " people was not able to be seated." . "<br>";
             //calculate average meal time for parties of this size
@@ -180,19 +207,23 @@ class Restaurant {
         $PARTY->SEATEDAT = $TABLEGROUP;
         $PARTY->SEATED = true;
         $PARTY->STARTEATINGTIME = timeX(60);
-        $TABLEGROUP->makeOccupied($PARTY);
+        $TABLEGROUP->makeOccupied($PARTY,$PAGR_database);
     }
 
-    public function unseatGroup($PARTY) {
+    public function unseatGroup(&$PARTY) {
         $TABLEGROUP = $PARTY->SEATEDAT;
         $TABLEGROUP->makeUnoccupied();
         $PARTY->ENDEATINGTIME = timeX(60);
         $this->MEALTIMESTATS[$PARTY->SIZE][] = ($PARTY->ENDEATINGTIME - $PARTY->STARTEATINGTIME);
     }
 
-    public function makeReservation($PARTY,&$TABLEGROUP) {
-       $TABLEGROUP->RESERVATIONTIMES[] = $PARTY->RESERVATIONTIME;          
-
+    public function makeReservation(&$PARTY,&$TABLEGROUP) {
+        if ( $TABLEGROUP == NULL ) {
+            echo "COULD NOT MAKE RESERVATION!" . "<br>";
+            return NULL;
+        }
+        $TABLEGROUP->RESERVATIONTIMES[] = $PARTY->RESERVATIONTIME;          
+        $PARTY->TABLEGROUPRESERVED = $TABLEGROUP;
     }
 
     public function avgMealTime($PARTYSIZE) {
@@ -261,7 +292,7 @@ class Party {
 
 class WalkIn extends Party {
     public $CHECKINTIME;
-
+    
     public function __construct($ID,$SIZE,$CHECKINTIME) {
         $this->ID = $ID;
         $this->SIZE = $SIZE;
@@ -281,6 +312,11 @@ class Reservation extends Party {
         $this->SEATED = false;
         $this->RESERVATIONTIME = $RESERVATIONTIME;
     }
+
+    public function changeTime($TIME) {
+        $this->RESERVATIONTIME = $TIME;
+    }
+
 }
 
 
@@ -309,6 +345,20 @@ function printMealTimeStats($RESTAURANT) {
     echo "<br>";
 }
 
+
+/**
+ *Database testing
+ */
+$T1 = new Table(1,6);
+$T2 = new Table(2,6);
+
+$TG11 = new TableGroup(11,1,array(&$T1,&$T2));
+
+$P1 = new Party(1,5);
+
+$TG11->makeUnoccupied($PAGR_database);
+
+/*
 //Make an array of tables for our mock up restaurant
 $Tables = array();
 $TableID = 1;
@@ -347,6 +397,8 @@ $R->addTableGroup($TableGroupID++,6,array($Tables[0],$Tables[1],$Tables[2]));
 $R->addTableGroup($TableGroupID++,6,array($Tables[1],$Tables[2],$Tables[3]));
 
 //make some mock meal time statistics
+//party size of 1
+$R->MEALTIMESTATS[1][] = 15;
 //party size of 2
 $R->MEALTIMESTATS[2][] = 25;
 //party size of 3
@@ -376,11 +428,11 @@ $P1[] = new Party($PartyID++, 6);//party 1
 $P1[] = new Party($PartyID++, 6);//party 2
 $P1[] = new Party($PartyID++, 6);//party 3
 $P1[] = new Party($PartyID++, 6);//party 4
-$P1[] = new Party($PartyID++, 1);//party 5
+$P1[] = new Party($PartyID++, 6);//party 5
 $P1[] = new Party($PartyID++, 2);//party 6
-$P1[] = new Party($PartyID++, 6);//party 7
-$P1[] = new Party($PartyID++, 1);//party 8
-
+$P1[] = new Party($PartyID++, 5);//party 7
+$P1[] = new Party($PartyID++, 6);//party 8
+$P1[] = new Party($PartyID++, 4);//party 9
 
 printMealTimeStats($R);
 
@@ -405,6 +457,7 @@ foreach ( $P1 as $CURRENTPARTY ) {
 printStatusOfTables($Tables);
 
 printMealTimeStats($R);
+*/
 
 ?>
 </body></html>
