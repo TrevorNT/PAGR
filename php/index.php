@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-
+ 
 <?php
-	$guest_con = mysqli_connect("127.0.0.1", "root","","db_guest");
-	if(mysqli_connect_errno($guest_con))
+	include "pagr_db.php";
+	$PAGR_database = get_pagr_db_connection();
+	if(mysqli_connect_errno($PAGR_database))
 	{
 		$good =  "Guest Connection Failed";
 	}
@@ -10,11 +11,37 @@
 		$good = "good";
 ?>
 <html lang="en"><head>
+<script type="text/javascript">
+	function addWalkInCust()
+	{
+		WINDOW = window.open("/rcp_scripts/add_walkin.php","addCust", 
+		                     "height = 400, width = 300, menubar = 0, scrollbars = 0");
+		X = (screen.width-300)/2
+		Y = (screen.height-400)/2
+		WINDOW.moveTo(X,Y)
+		WINDOW.focus()
+	}
+
+	function addReservationCust()
+	{
+		window.open("/rcp_scripts/add_reservation.php","addCust",
+		            "height = 800, width = 500, menubar = 0, scrollbars = 0");
+	}
+
+</script>
+<style type="text/css">
+	#table_container
+	{ 
+		width: 400px
+		border: 1px solid #aaa
+	}
+</style>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta http-equiv="refresh" content="25" > 
     <link rel="shortcut icon" href="http://getbootstrap.com/assets/ico/favicon.png">
 
     <title>Restaurant Control Panel</title>
@@ -46,18 +73,17 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
+            <li class="active"><a href="/">Home</a></li>
             <li><a href="#about">About</a></li>
+            <li><a> <font color= "FFFF66">Current Wait Time: <?php echo "" ?> 
+            </font></a></li>  
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
     <div class="container">
-
       <div class="starter-template">
-	<h2> <?php if($good == 'good')
-		    {echo "Connected to database!";}?> <h2>
         <h1>PAGR Restaurant Control Panel</h1>
       </div>
 
@@ -69,36 +95,39 @@
                 </div>
                 <div class="panel-body">
                   <ol>
-                    <li> Customer1 </li>
-                    <li> Customer2 </li>
-                    <li> Customer3 </li>
-                    <li> Customer4 </li> 
-                    <li> Customer5 </li>
-                    <li> Customer6 </li>
-                    <li> Customer7 </li>
-                    <li> Customer8 </li>
-                    <li> Customer9 </li>
-                    <li> Customer10 </li>
+		  			<?php
+						$table = $PAGR_database->query("SELECT patron_id, name 
+						                                FROM patrons_t 
+						                                WHERE reservation_time IS NULL 
+						                                ORDER BY patron_id");
+						while ($row = mysqli_fetch_array($table))
+						{
+							echo "<li>   ".$row['patron_id']."  ". $row['name'] . "</li>";
+						}
+					?>
                   </ol>
                 </div>
               </div>
 
           <p align = "center">
-            <button type="button" class="btn btn-lg btn-default">ADD+</button>
+            <button type="button" onclick="addWalkInCust()" class="btn btn-lg btn-default">ADD+</button>
           </p>
 
     </div><!-- /.container -->
 
     <div class="col-md-6">
-            <h1 align = "center">ACTIONS</h1>
+            <h4 align = "center"> <?php echo "hello world" ?> </h4>
+            <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
-				<form method="Post" action= "query.php">
+				<form method="Post" action= "/rcp_scripts/action_button.php">
 					<select name = "customer">
 						<?php 
-							$sql = mysqli_query($guest_con, "SELECT ID, Guest FROM Guests");
-							while ($row = mysqli_fetch_array($sql))
+							$table = $PAGR_database->query("SELECT patron_id, 
+							                                name FROM patrons_t");
+							while ($row = mysqli_fetch_array($table))
 							{
-								echo "<option value= ".$row['ID'].">" . $row['Guest'] . "</option>";
+								echo "<option value= ".$row['patron_id'].">".
+								$row['patron_id']."  ". $row['name'] . "</option>";
 							}
 						?>
 					</select>
@@ -106,7 +135,40 @@
 					<br>
 					<input type="submit" class="btn btn-lg btn-primary" value = "Page" align = bottom>
 					<input type="button" class="btn btn-lg btn-success" value = "Get Order">
-					<input type="button" class="btn btn-lg btn-danger" value = "DELETE">
+					<input type="button" class="btn btn-lg btn-default" value = "Seat Customer"> 
+					<br>
+					<br>
+					<input type="button" class="btn btn-lg btn-danger" value = "DELETE"> 
+				</form>
+
+				<h3 align = "center"> Table Setup</h3>
+				<h4 align = "center"> <font color = "FF6666"><b> RED </b></font> 
+				    tables are <font color = "FF6666"><b>OCCUPIED </b></font> </h4>
+				    
+				<div align = "center" class= "container" id= "table_container">
+					<script type="text/javascript" src="/rcp_scripts/raphael.js"></script>
+					<!-- Call the php driver to create the tables. -->
+					<?php include(dirname(__FILE__))."/rcp_scripts/tables.php"; 
+					createTables($PAGR_database); ?>
+				</div>
+				<form method="Post" action= "/rcp_scripts/unmark_tables.php">
+				    
+				    <h4> Unmark Table:
+				    <select name = "table">
+				    <?php
+				        $OCC_TABLES = $PAGR_database->query("SELECT table_id 
+				                                             FROM table_t
+				                                             WHERE isOccupied = 1");
+				                                             
+				        while ($ROW = mysqli_fetch_array($OCC_TABLES))
+				        {
+				            echo '<option value= '.$ROW['table_id'].'> 
+				            Table '.$ROW['table_id'].'</option>';
+				        }
+				        
+				    ?>
+				    </select>
+				    <input type="submit" value = "Submit"> 
 				</form>
 		    </div>
     </div>
@@ -118,17 +180,17 @@
                 </div>
                 <div class="panel-body">
                   <ol>
-                    <li> Customer1 </li>
-                    <li> Customer2 </li>
-                    <li> Customer3 </li>
-                    <li> Customer4 </li>
-                    <li> Customer5 </li>
-                    <li> Customer6 </li>
-                    <li> Customer7 </li>
-                    <li> Customer8 </li>
-                    <li> Customer9 </li>
-                    <li> Customer10 </li>
-	            <li> <?php print "Hello World" ?> </li>
+		  			<?php
+						$table = $PAGR_database->query("SELECT patron_id, name, 
+						                                reservation_time FROM patrons_t WHERE 
+						                                reservation_time IS NOT NULL ORDER BY 
+						                                reservation_time");
+						while ($row = mysqli_fetch_array($table))
+						{
+							echo "<li>   ".$row['patron_id']."  ". $row['name'] .
+							"  ".$row['reservation_time']."</li>";
+						}
+					?>
                   </ol>
                 </div>
          </div>
