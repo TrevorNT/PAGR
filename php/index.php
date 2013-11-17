@@ -14,7 +14,8 @@
 <script type="text/javascript">
 	function addWalkInCust()
 	{
-		WINDOW = window.open("/add_walkin.php","addCust","height = 400, width = 300, menubar = 0, scrollbars = 0");
+		WINDOW = window.open("/rcp_scripts/add_walkin.php","addCust", 
+		                     "height = 400, width = 300, menubar = 0, scrollbars = 0");
 		X = (screen.width-300)/2
 		Y = (screen.height-400)/2
 		WINDOW.moveTo(X,Y)
@@ -23,7 +24,8 @@
 
 	function addReservationCust()
 	{
-		window.open("/add_reservation.php","addCust","height = 800, width = 500, menubar = 0, scrollbars = 0");
+		window.open("/rcp_scripts/add_reservation.php","addCust",
+		            "height = 800, width = 500, menubar = 0, scrollbars = 0");
 	}
 
 </script>
@@ -73,7 +75,8 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="#about">About</a></li>
-            <li><a> <font color= "FFFF66">Current Wait Time: <?php echo "" ?> </font></a></li>  
+            <li><a> <font color= "FFFF66">Current Wait Time: <?php echo "" ?> 
+            </font></a></li>  
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -93,7 +96,10 @@
                 <div class="panel-body">
                   <ol>
 		  			<?php
-						$table = $PAGR_database->query("SELECT patron_id, name FROM patrons_t WHERE reservation_time IS NULL ORDER BY patron_id");
+						$table = $PAGR_database->query("SELECT patron_id, name 
+						                                FROM patrons_t 
+						                                WHERE reservation_time IS NULL 
+						                                ORDER BY patron_id");
 						while ($row = mysqli_fetch_array($table))
 						{
 							echo "<li>   ".$row['patron_id']."  ". $row['name'] . "</li>";
@@ -113,13 +119,15 @@
             <h4 align = "center"> <?php echo "hello world" ?> </h4>
             <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
-				<form method="Post" action= "action_button.php">
+				<form method="Post" action= "/rcp_scripts/action_button.php">
 					<select name = "customer">
 						<?php 
-							$table = $PAGR_database->query("SELECT patron_id, name FROM patrons_t");
+							$table = $PAGR_database->query("SELECT patron_id, 
+							                                name FROM patrons_t");
 							while ($row = mysqli_fetch_array($table))
 							{
-								echo "<option value= ".$row['patron_id'].">".$row['patron_id']."  ". $row['name'] . "</option>";
+								echo "<option value= ".$row['patron_id'].">".
+								$row['patron_id']."  ". $row['name'] . "</option>";
 							}
 						?>
 					</select>
@@ -138,11 +146,12 @@
 				    tables are <font color = "FF6666"><b>OCCUPIED </b></font> </h4>
 				    
 				<div align = "center" class= "container" id= "table_container">
-					<script type="text/javascript" src="/raphael.js"></script>
+					<script type="text/javascript" src="/rcp_scripts/raphael.js"></script>
 					<!-- Call the php driver to create the tables. -->
-					<?php include "tables.php"; createTables($PAGR_database); ?>
+					<?php include(dirname(__FILE__))."/rcp_scripts/tables.php"; 
+					createTables($PAGR_database); ?>
 				</div>
-				<form method="Post" action= "unmark_tables.php">
+				<form method="Post" action= "/rcp_scripts/unmark_tables.php">
 				    
 				    <h4> Unmark Table:
 				    <select name = "table">
@@ -153,11 +162,8 @@
 				                                             
 				        while ($ROW = mysqli_fetch_array($OCC_TABLES))
 				        {
-				        
-				            
 				            echo '<option value= '.$ROW['table_id'].'> 
-				            Table '.$ROW['table_id']."&nbsp&nbsp&nbsp".'</option>';
-				            
+				            Table '.$ROW['table_id'].'</option>';
 				        }
 				        
 				    ?>
@@ -181,7 +187,8 @@
 						                                reservation_time");
 						while ($row = mysqli_fetch_array($table))
 						{
-							echo "<li>   ".$row['patron_id']."  ". $row['name'] ."  ".$row['reservation_time']."</li>";
+							echo "<li>   ".$row['patron_id']."  ". $row['name'] .
+							"  ".$row['reservation_time']."</li>";
 						}
 					?>
                   </ol>
