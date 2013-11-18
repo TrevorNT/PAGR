@@ -47,19 +47,6 @@ function sortTG($A, $B) {
     return ($SIZEA < $SIZEB) ? -1 : 1;
 }
 
-
-
-class ReservationData{
-    public $STARTTIME;
-    public $ENDTIME;
-    public $PARTY;
-
-    public function __construct($STARTTIME,&$PARTY) {
-        $this->STARTTIME = $STARTTIME;
-        $this->PARTY = $PARTY;
-    }
-}
-
 class Table {
     public $ID;
     public $SIZE;
@@ -153,58 +140,12 @@ class Restaurant {
             return;
         }
         foreach ( $this->TABLEGROUPS as $SIZE ) {
-            //TODO
-        }
-    }
-
-    public function updateFromDb($DB) {
-    /**
-     *Purpose: to update the map data structure containing information about Tables and TableGroups
-     *
-     *Precondition: $DB must be a 
-     *
-     *Postcondition: $this->TABLEGROUPS is updated with information from the database
-     */
-        echo "In function<br>";
-        $size = 2;
-        $TablesArray = array();
-        $TableGroupsArray = array();
-        $FinalDataStructure = array(array());
-
-        while ( $size <= 10 ) { 
-            echo "first loop<br>";
-            echo "size =".$size."<br>";
-            $GroupSizeResult = $DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$size;");
-            echo "testfirst<br>";
-            while ( $rowA = mysqli_fetch_array($GroupSizeResult)) {//for each table group of a size
-                echo "2nd loop<br>";
-                $TablesInGroupResult = $DB->query("SELECT table_id FROM tablegroup_table_mapping_t WHERE tablegroup_id=".$rowA['tablegroup_id'].";");
-                while ( $rowB = mysqli_fetch_array($TablesInGroupResult) ) {//for each table in the table group
-                    echo "3rd loop<br>"; 
-                    $TableSize = $DB->query("SELECT capacity FROM table_t WHERE table_id=".$rowB['table_id'].";");
-                    echo "test BBB<br>";
-                    while ($TableSizeA = mysqli_fetch_array($TableSize) ) {
-                        $TableSizeR = $TableSizeA;
-                    }
-                    echo "test AAA<br>";
-                    $TableIsOccupied = $DB->query("SELECT isOccupied FROM table_t WHERE table_id=".$rowB['table_id'].";");
-                    while ( $TableIsOccupiedA = mysqli_fetch_array($TableIsOccupied)) {
-                        $TableIsOccupiedR = $TableIsOccupiedA;
-                    }
-                    echo "Making a new table with id:".$rowB['table_id']." size:". $TableSizeR['capacity']." and occupied:". $TableIsOccupiedR['isOccupied']."<br>";
-                    $TablesArray[] = new Table($rowB['table_id'],$TableSizeR,$TableIsOccupiedR);
-                }
-
-                $TableGroupSize = $size;
-                $TableGroupIsOccupied = $DB->query("SELECT is_occupied FROM tablegroups_t WHERE tablegroup_id=".$rowA['tablegroup_id'].";");
-
-                $TableGroupsArray[] = new TableGroup($rowA['tablegroup_id'],$TableGroupSize,$TablesArray,$TableGroupIsOccupied);//id size tables occupied
+            foreach ( $SIZE as $CURRENT ) {
+                echo "TableGroup " . $CURRENT->ID . " is ";
+                if ( $CURRENT->OCCUPIED ) echo "occupied<br>";
+                else echo "not occupied<br>";
             }
-            $FinalDataStructure[$size] = $TableGroupsArray;
-            ++$size;
         }
-
-        $this->TABLEGROUPS = $FinalDataStructure;
     }
 
     public function addTableGroup ($ID,$SIZE,$TABLES) {
@@ -212,52 +153,75 @@ class Restaurant {
         usort($this->TABLEGROUPS[$SIZE], "sortTG");
     }
 
-    public function findBestTableGroupDB($DB,$PATRONID) {
+    public function findBestTableGroupForWaitingDB($DB,$PATRONID) {
         $PartySize_t = $DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PATRONID;");
         $PartySize_r = mysqli_fetch_array($PartySize_t);
         $PartySize_v = $PartySize_r['party_size'];
+
+        $TableSize = $PartySize_v;
+
+        echo "Party size is $PartySize_v<br>";
+
+        //see if there are TableGroups of size $TableSize
+        while ( $TableSize<10 ) {
+            echo "TEST A<br>";
+            $TableGroups_t = $DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$TableSize;");
+            while ( 1 ) {
+                echo "TEST B<br>";
+                $TableGroups_r = mysqli_fetch_array($TableGroups_t);
+                $TableGroups_v = $TableGroups_r['tablegroup_id'];
+                echo "TEST C<br>";
+                echo "Currently looking at TableGroup $TableGroups_v<br>";
+                
+            }
+            ++$TableSize;
+        }
+        return NULL;
     }
 
-    public function findBestTableGroup (&$PARTY) {
-        $TABLESIZE = $PARTY->SIZE;
+    public function findBestTableGroupForSeatingDB($DB,$PATRONID) {
+        $PartySize_t = $DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PATRONID;");
+        $PartySize_r = mysqli_fetch_array($PartySize_t);
+        $PartySize_v = $PartySize_r['party_size'];
 
-        while ( !isset($this->TABLEGROUPS[$TABLESIZE]) ) {
-            ++$TABLESIZE;
-        }
+        $TableSize = $PartySize_v;
 
-        $FASTESTAVAILABLE = $this->TABLEGROUPS[$TABLESIZE][0]; 
-           foreach ( $this->TABLEGROUPS[$TABLESIZE] as $CURRENTGROUP ) {
-                if ( $CURRENTGROUP->OCCUPIED == false ) {
-                    foreach ( $CURRENTGROUP->TABLES as $CURRENTTABLE ) {
-                      if ( $CURRENTTABLE->OCCUPIED == true ) {
+        //see if there are TableGroups of size $TableSize
+        while ( $TableSize<10 ) {
+            $TableGroups_t = $DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$TableSize;");
+            while ( 1 ) {
+                $TableGroups_r = mysqli_fetch_array($TableGroups_t);
+                $TableGroups_v = $TableGroups_r['tablegroup_id'];
+                //check to see if the table group is occupied
+                //if it is occupied, go to the next table group
+                $TableGroupOccupied_t = $DB->query("SELECT is_occupied FROM tablegroups_t WHERE tablegroup_id=$TableGroups_v;");
+                $TableGroupOccupied_r = mysqli_fetch_array($TableGroupOccupied_t);
+                $TableGroupOccupied_v = $TableGroupOccupied_r['is_occupied'];
+                if ( $TableGroupOccupied_v ) { //if the group is occupied
+                    continue;
+                }
+                else { //if the table group is not occupied, start to look at its tables
+                    $TablesInGroup_t = $DB->query("SELECT table_id FROM tablegroup_table_mapping_t WHERE tablegroup_id=$TableGroups_v;");
+                    while ( $TablesInGroup_r = mysqli_fetch_array($TablesInGroup_t) ) {
+                        $TablesInGroup_v = $TablesInGroup_r['table_id'];
+                        //get the table information
+                        $TableOccupied_t = $DB->query("SELECT isOccupied FROM table_t WHERE table_id=$TablesInGroup_v;");
+                        $TableOccupied_r = mysqli_fetch_array($TableOccupied_t);
+                        $TableOccupied_v = $TableOccupied_r['isOccupied'];
+                        if ( $TableOccupied_v ) { //the table in the table group is occupied
                             continue 2;
                         }
                     }
-                    //found group
-                    //now check for reservations
-                    if ( isset($CURRENTGROUP->RESERVATIONTIMES) ) { //if the table has a reservation
-                        foreach ( $CURRENTGROUP->RESERVATIONTIMES as $TIME ) {
-                            if ( $TIME->STARTTIME > time() ) {//if the reservation time is in the future
-                             if ( ($TIME->STARTTIME-timeX(60)) > ($this->avgMealTime($PARTY->SIZE)+(5*60)) ) {//if the reservation is far enough in the future have
-                                                                                                      //the table open by then if a group is seated now
-                                    return $CURRENTGROUP;
-                                }
-                                continue 2;
-                            }
-                        }
-                    }
-                   //if no reservations
-                    return $CURRENTGROUP;
-                }
-                else { // the group is occupied, see how long the wait is going to be!
-                  if ( ((($CURRENTGROUP->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) < ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60)) ) {
-                        $FASTESTAVAILABLE = $CURRENTGROUP;
-                    }
+                    //all tables in group must be open
+                    //return the ID for the TableGroup
+                    return $TableGroups_v;
                 }
             }
-        $PARTY->EXPECTEDWAIT = ((($FASTESTAVAILABLE->PARTY->STARTEATINGTIME)+$this->avgMealTime($PARTY->SIZE))-timeX(60));
+            ++$TableSize;
+        }
         return NULL;
     }
+
     public function seatGroup(&$PARTY,&$TABLEGROUP) {
         if ( $TABLEGROUP == NULL ) {
             echo "Party " . $PARTY->ID . " with " . $PARTY->SIZE . " people was not able to be seated." . "<br>";
@@ -302,6 +266,17 @@ class Restaurant {
             $sum = $sum/count($this->MEALTIMESTATS[$PARTYSIZE]);
 
             return $sum;
+    }
+
+    public function avgMealTimeDB($DB,$PARTYSIZE) {
+        $ReturnValue = 0;
+        $WaitTimesForSize_t = $DB->query("SELECT wait_time FROM wait_times_t WHERE group_size=$PARTYSIZE;");
+        while ( $WaitTimesForSize_r = mysqli_fetch_array($WaitTimesForSize_t) ) {
+            $WaitTimesForSize_v = $WaitTimesForSize_r['wait_time'];
+            $ReturnValue+=$WaitTimesForSize_v;
+            //TODO: Figure out how to get the number of results returned from the first query in this function
+        }
+        //divide $ReturnValue by the number of values to get the average
     }
 
 
@@ -413,33 +388,9 @@ function printMealTimeStats($RESTAURANT) {
 }
 
 
-/**
- *Testing for getFromDb()
- *
- */
+$R1 = new Restaurant();
+echo "I'll seat party 1 at TableGroup ".$R1->findBestTableGroupForSeatingDB($PAGR_database,1)."<br>";
 
-$R = new Restaurant();
-
-$R->displayInfo();
-
-$R->updateFromDb($PAGR_database);
-
-$R->displayInfo();
-
-$R->find
-/**
- *Database testing
- */
- /*
-$T1 = new Table(1,6,false);
-$T2 = new Table(2,6,false);
-
-$TG11 = new TableGroup(11,1,array(&$T1,&$T2));
-
-$P1 = new Party(1,5);
-
-$TG11->makeUnoccupied($PAGR_database);
-*/
 /*
 //Make an array of tables for our mock up restaurant
 $Tables = array();
