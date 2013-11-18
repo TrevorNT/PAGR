@@ -15,3 +15,6 @@
 <?php echo $good; ?>
 <?php $PAGR_database->query("UPDATE patrons_t SET page = 1 WHERE patron_id = ". $_POST["customer"]) ?>
 Request for cust <?php echo $_POST["customer"]; ?> sent <br>
+
+</body>
+</html>

@@ -1,14 +1,5 @@
 <!DOCTYPE html>
 
-<?php
-	$guest_con = mysqli_connect("127.0.0.1", "root","","db_guest");
-	if(mysqli_connect_errno($guest_con))
-	{
-		$good =  "Guest Connection Failed";
-	}
-	else
-		$good = "good";
-?>
 <html lang="en"><head>
 
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -45,9 +36,9 @@
     <div class="container">
 
       <div class="starter-template">
-	<form method="Post" action= "add_customer.php">
-		Name:  <input type="text" name="firstname"> </br>
-		Phone: <input type="text" name="firstname"> </br>
+	<form method="Post" action= "add_walkin_customer.php">
+		Name:  <input type="text" name="first_name"> </br>
+		Phone: <input type="text" name="phone_number"> </br>
 		<br>
 		<input type="submit" class="btn btn-lg btn-primary" value = "Submit" align = bottom>
 		
