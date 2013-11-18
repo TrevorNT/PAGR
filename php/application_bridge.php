@@ -50,15 +50,15 @@
 	 */
 	function create_reservation() {
 		// PRECONDITION: handset_id, party_size, patron_name must be specified
-		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
-		if (!isset($_REQUEST['party_size'])) die("ERROR: party_size required");
-		if (!isset($_REQUEST['patron_name'])) die("ERROR: patron_name required");
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['party_size'])) die("ERROR: party_size required");
+		if (empty($_REQUEST['patron_name'])) die("ERROR: patron_name required");
 		
 		// OPTIONAL PRECONDITION: reservation_time specifies a reservation, not a walk-in.
 		// NOTE: reservation_time MUST be in the following format: "YYYY-MM-DD HH:MM:SS"
 		//	(checking this will be reserved to the database though, as it is more efficient)
 		$RESERVATION_TIME = NULL;
-		if (isset($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
+		if (!isset($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -106,14 +106,14 @@
 	}
 	
 	/**
-	 * Prints reservation details in a <property>:<value>; format.  Requires $_REQUEST['reservation_id'].
+	 * Prints reservation details in a <property>=<value>; format.  Requires $_REQUEST['reservation_id'].
 	 * 
 	 * @return String A long string about reservation details, or ERROR if the reservation doesn't exist.
 	 */
     function get_reservation() {
         // PRECONDITION: handset_id, reservation_id must be specified
-		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
-		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -153,14 +153,14 @@
 	 */
 	function modify_reservation() {
 		// PRECONDITION: handset_id, reservation_id must be specified
-		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
-		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		
 		// OPTIONAL PRECONDIITON: party_size, reservation_time
 		$PARTY_SIZE = NULL;
 		$RESERVATION_TIME = NULL;
-		if (isset($_REQUEST['party_size'])) $PARTY_SIZE = (int)$_REQUEST['party_size'];
-		if (isset($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
+		if (!empty($_REQUEST['party_size'])) $PARTY_SIZE = (int)$_REQUEST['party_size'];
+		if (!empty($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
 		
 		// What if neither of them are specified?
 		if (empty($PARTY_SIZE) && empty($RESERVATION_TIME)) die("ERROR: nothing to change");
@@ -253,10 +253,34 @@
 	}
 	
 	/**
+	 * Returns item details for a given appetizer order item.
 	 * 
+	 * @return String A <property>=<value>; string with all the properties about the given item, or ERROR if not found.
 	 */
 	function get_item() {
+		// PRECONDITION: item_id must be set.
+		if (empty($_REQUEST['item_id'])) die("ERROR: item_id must be set");
 		
+		// Connect to the database, set the local variables
+		$DB = get_pagr_db_connection();
+		$ITEM_ID = (int)$_REQUEST['item_id'];
+		
+		// Run the query, return the result
+		$RESULT = $DB->query("SELECT item_name, item_desc, item_price, is_drink, picture FROM items_t WHERE item_id = $ITEM_ID LIMIT 1;");
+		if ($RESULT === false) {
+			$ERROR = $DB->error;
+			echo "ERROR: $ERROR";
+		}
+		else {
+			$ROW = $RESULT->fetch_row();
+			if (empty($ROW)) die("ERROR: no item found");
+			$ITEM_NAME = $ROW[0];
+			$ITEM_DESC = $ROW[1];
+			$ITEM_PRICE = $ROW[2];
+			$IS_DRINK = $ROW[3];
+			$PIC = $ROW[4];
+			echo "name=$ITEM_NAME;desc=$ITEM_DESC;price=$ITEM_PRICE;drink=$IS_DRINK;picture=$PIC;";
+		}
 	}
 	
 	/**
@@ -272,8 +296,8 @@
 	 */
 	function get_page_status() {
 		// PRECONDITION: handset_id, reservation_id must be specified
-		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
-		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -309,8 +333,8 @@
 	 */
 	function ack_page() {
 		// PRECONDITION: handset_id, reservation_id must be specified
-		if (!isset($_REQUEST['handset_id'])) die("ERROR: handset_id required");
-		if (!isset($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -339,6 +363,6 @@
 <?php
 	// Simply calls the function given in $_REQUEST['pagr_exec'] provided
 	// it is within this namespace.  (And provided it exists.)
-	if (!isset($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined');
+	if (empty($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined');
 	call_user_func("pagr\app_bridge\\" . $_REQUEST['pagr_exec']);
 ?>
