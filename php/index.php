@@ -119,7 +119,7 @@
             <h4 align = "center"> <?php echo "hello world" ?> </h4>
             <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
-				<form method="Post" action= "/rcp_scripts/action_button.php">
+				<form method="Post" action= "/rcp_scripts/action_button.php" target= "_blank">
 					<select name = "customer">
 						<?php 
 							$table = $PAGR_database->query("SELECT patron_id, 
@@ -133,9 +133,13 @@
 					</select>
 					<br>
 					<br>
-					<input type="submit" class="btn btn-lg btn-primary" value = "Page" align = bottom>
-					<input type="button" class="btn btn-lg btn-success" value = "Get Order">
-					<input type="button" class="btn btn-lg btn-default" value = "Seat Customer"> 
+					<input type="submit" name = "page" 
+					class="btn btn-lg btn-primary" value = "Page" align = bottom>
+					
+					<input type="submit" name = "get_order" 
+					class="btn btn-lg btn-success" value = "Get Order">
+					
+					<input type="submit" class="btn btn-lg btn-default" value = "Seat Customer"> 
 					<br>
 					<br>
 					<input type="button" class="btn btn-lg btn-danger" value = "DELETE"> 
