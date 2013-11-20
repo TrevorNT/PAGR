@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_actionbarsherlock" default="compile.module.actionbarsherlock">
+  <dirname property="module.actionbarsherlock.basedir" file="${ant.file.module_actionbarsherlock}"/>
+  
+  <property name="module.jdk.home.actionbarsherlock" value="${jdk.home.android_4.2.2}"/>
+  <property name="module.jdk.bin.actionbarsherlock" value="${jdk.bin.android_4.2.2}"/>
+  <property name="module.jdk.classpath.actionbarsherlock" value="jdk.classpath.android_4.2.2"/>
+  
+  <property name="compiler.args.actionbarsherlock" value="${compiler.args}"/>
+  
+  <property name="actionbarsherlock.output.dir" value="${module.actionbarsherlock.basedir}/../../../Documents/workspace/WheresMyCar/out/production/actionbarsherlock"/>
+  <property name="actionbarsherlock.testoutput.dir" value="${module.actionbarsherlock.basedir}/../../../Documents/workspace/WheresMyCar/out/test/actionbarsherlock"/>
+  
+  <path id="actionbarsherlock.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="actionbarsherlock.module.production.classpath">
+    <path refid="${module.jdk.classpath.actionbarsherlock}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="actionbarsherlock.runtime.production.module.classpath">
+    <pathelement location="${actionbarsherlock.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="actionbarsherlock.module.classpath">
+    <path refid="${module.jdk.classpath.actionbarsherlock}"/>
+    <pathelement location="${actionbarsherlock.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  <path id="actionbarsherlock.runtime.module.classpath">
+    <pathelement location="${actionbarsherlock.testoutput.dir}"/>
+    <pathelement location="${actionbarsherlock.output.dir}"/>
+    <path refid="library.android-support-v4.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.actionbarsherlock">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.actionbarsherlock">
+    <patternset refid="compiler.excluded"/>
+    <patternset refid="excluded.from.module.actionbarsherlock"/>
+  </patternset>
+  
+  <path id="actionbarsherlock.module.sourcepath">
+    <dirset dir="${module.actionbarsherlock.basedir}">
+      <include name="gen"/>
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.actionbarsherlock" depends="compile.module.actionbarsherlock.production,compile.module.actionbarsherlock.tests" description="Compile module actionbarsherlock"/>
+  
+  <target name="compile.module.actionbarsherlock.production" depends="register.custom.compilers" description="Compile module actionbarsherlock; production classes">
+    <mkdir dir="${actionbarsherlock.output.dir}"/>
+    <javac2 destdir="${actionbarsherlock.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.actionbarsherlock}/javac">
+      <compilerarg line="${compiler.args.actionbarsherlock}"/>
+      <bootclasspath refid="actionbarsherlock.module.bootclasspath"/>
+      <classpath refid="actionbarsherlock.module.production.classpath"/>
+      <src refid="actionbarsherlock.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.actionbarsherlock"/>
+    </javac2>
+    
+    <copy todir="${actionbarsherlock.output.dir}">
+      <fileset dir="${module.actionbarsherlock.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+        <patternset refid="excluded.from.compilation.actionbarsherlock"/>
+      </fileset>
+      <fileset dir="${module.actionbarsherlock.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+        <patternset refid="excluded.from.compilation.actionbarsherlock"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.actionbarsherlock.tests" depends="register.custom.compilers,compile.module.actionbarsherlock.production" description="compile module actionbarsherlock; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.actionbarsherlock" description="cleanup module">
+    <delete dir="${actionbarsherlock.output.dir}"/>
+    <delete dir="${actionbarsherlock.testoutput.dir}"/>
+  </target>
+</project>
