@@ -40,6 +40,8 @@
 		$INI_FILE = fopen($_SERVER["DOCUMENT_ROOT"] . "/PAGR/php/pagr.ini", "r");
 		if ($INI_FILE == false) die("ERROR: pagr.ini not found!");
 		
+		// NOTE: this line will make it work with Windows-based but NOT Unix-based files
+		//		because Windows line endings are stupid.
 		while ($INI_LINE = fscanf($INI_FILE, "%[a-zA-z0-9_.-]=%[a-zA-Z0-9_.-];\r\n")) {
 			if ($INI_LINE[0] == "db_uname") $DB_UNAME = $INI_LINE[1];
 			elseif ($INI_LINE[0] == "db_pass") $DB_PASS = $INI_LINE[1];
@@ -50,8 +52,6 @@
 		fclose($INI_FILE);
 		
 		if (strlen($DB_UNAME) == 0 || strlen($DB_PASS) == 0 || strlen($DB_LOCATION) == 0 || strlen($DB_PORT) == 0) die("ERROR: malformed pagr.ini file!");
-		
-		//echo "Connection established!\r\n";
 		
 		return new mysqli($DB_LOCATION, $DB_UNAME, $DB_PASS, "pagr_s", $DB_PORT);
 	}
