@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -53,7 +54,9 @@ public class AppetizerDetailFragment extends SherlockFragment {
 
     public void updateAppetizerView(int position) {
         TextView description = (TextView) getActivity().findViewById(R.id.appetizer_view);
+        ImageView samplePicture = (ImageView) getActivity().findViewById(R.id.imageAppetizer);
         description.setText(Appetizer.Description[position]);
+        samplePicture.setImageResource(Appetizer.SamplePicture[position]);
         mCurrentPosition = position;
     }
 
@@ -64,4 +67,8 @@ public class AppetizerDetailFragment extends SherlockFragment {
         // Save the current article selection in case we need to recreate the fragment
         outState.putInt(ARG_POSITION, mCurrentPosition);
     }
+
+//    public String getAppetizerID() {
+//        return Appetizer.AppetizerID[mCurrentPosition];
+//    }
 }

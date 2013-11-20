@@ -16,6 +16,9 @@ import edu.rpi.pagr.misc.CustomListAdapter;
 import edu.rpi.pagr.misc.AppetizerItem;
 import edu.rpi.pagr.service.NotificationService;
 
+/**
+ * Not in Use
+ */
 public class AppetizerListActivity extends SherlockFragmentActivity {
 
     private Button button_submit_order;

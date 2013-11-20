@@ -1,7 +1,7 @@
 package edu.rpi.pagr.task;
 
 /**
- * Created by Daniel Zhao on 10/10/13.
+ * Created by Daniel Zhao on 10/10/13. Not in use
  */
 import java.io.InputStream;
 import java.lang.ref.WeakReference;

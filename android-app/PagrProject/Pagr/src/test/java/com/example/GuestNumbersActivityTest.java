@@ -3,6 +3,7 @@ package com.example;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import com.pivotallabs.injected.InjectedActivity;
 import com.pivotallabs.tracker.RecentActivityActivity;
@@ -28,11 +29,13 @@ import static org.fest.assertions.api.ANDROID.assertThat;
 public class GuestNumbersActivityTest {
     private GuestNumbersActivity activity;
     private Button pressButton;
+    private EditText editText;
 
     @Before
     public void setUp() throws Exception {
         activity = Robolectric.buildActivity(GuestNumbersActivity.class).create().visible().get();
         pressButton = (Button) activity.findViewById(R.id.button_ok);
+        editText = (EditText) activity.findViewById(R.id.edit_number_of_guests);
     }
 
     @Test
@@ -42,6 +45,17 @@ public class GuestNumbersActivityTest {
 
     @Test
     public void pressingTheButtonShouldStartMakeReservationActivity() throws Exception {
+        pressMeButton.performClick();
+
+        ShadowActivity shadowActivity = shadowOf(activity);
+        Intent startedIntent = shadowActivity.getNextStartedActivity();
+        ShadowIntent shadowIntent = shadowOf(startedIntent);
+        assertThat(shadowIntent.getComponent().getClassName(), equalTo(MakeReservationActivity.class.getName()));
+    }
+
+    @Test
+    public void pressingTheButtonShouldNotStartMakeReservationActivity() throws Exception {
+        editText.setText("@");
         pressMeButton.performClick();
 
         ShadowActivity shadowActivity = shadowOf(activity);

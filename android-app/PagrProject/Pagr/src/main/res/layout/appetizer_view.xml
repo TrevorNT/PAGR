@@ -15,4 +15,12 @@
         android:id="@+id/appetizer_view"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageAppetizer"
+        android:layout_above="@+id/appetizer_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="38dp" />
 </RelativeLayout>

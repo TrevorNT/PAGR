@@ -1,7 +1,7 @@
 package edu.rpi.pagr.misc;
 
 /**
- * Created by Daniel Zhao on 10/10/13.
+ * Created by Daniel Zhao on 10/10/13. Not in Use
  */
 public class AppetizerItem {
 

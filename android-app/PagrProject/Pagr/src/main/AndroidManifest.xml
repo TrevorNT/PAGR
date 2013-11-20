@@ -29,18 +29,21 @@
         </activity>
         <activity android:name="edu.rpi.pagr.GuestNumbersActivity" />
         <activity android:name="edu.rpi.pagr.MakeReservationActivity" />
-        <activity android:name=".AppetizerListActivity" />
+        <activity android:name="edu.rpi.pagr.AppetizerListActivity" />
         <activity android:name="edu.rpi.pagr.PagrDialogActivity" />
 
         <service android:name="edu.rpi.pagr.service.NotificationService" />
 
-        <activity android:name="edu.rpi.pagr.SettingsActivity"
-            android:parentActivityName="edu.rpi.pagr.GuestNumbersActivity">
+        <activity
+            android:name="edu.rpi.pagr.SettingsActivity"
+            android:parentActivityName="edu.rpi.pagr.GuestNumbersActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.rpi.pagr.GuestNumbersActivity" />
         </activity>
-        <activity android:name=".AppetizerFragmentActivity" />
+        <activity android:name="edu.rpi.pagr.AppetizerFragmentActivity" />
+        <activity android:name="edu.rpi.pagr.ViewCartActivity" />
+
     </application>
 
 </manifest>

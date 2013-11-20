@@ -12,6 +12,9 @@ import android.widget.TextView;
 import edu.rpi.pagr.R;
 import edu.rpi.pagr.misc.AppetizerItem;
 import edu.rpi.pagr.task.ImageDownloaderTask;
+/*
+Not in Use
+ */
 
 public class CustomListAdapter extends BaseAdapter {
 
