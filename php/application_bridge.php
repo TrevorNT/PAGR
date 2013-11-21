@@ -289,7 +289,8 @@
 		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		if (empty($_REQUEST['order_id'])) die("ERROR: order_id required");
 		if (empty($_REQUEST['item_id'])) die("ERROR: item_id required");
-		if (empty($_REQUEST['quantity'])) die("ERROR: quantity required");
+		// We actually have to use !isset here and not empty because empty sees 0 (a legit quantity here) as a null value.
+		if (!isset($_REQUEST['quantity'])) die("ERROR: quantity required");
 		
 		// Set all the many variables, incl. the database
 		$RESERVATION_ID = (int)$_REQUEST['reservation_id'];
