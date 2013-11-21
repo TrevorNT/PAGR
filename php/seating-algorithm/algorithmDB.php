@@ -1,14 +1,12 @@
-<html><body>
-
 <?php
 /** 
  *@author Jacob Zadnik <jacobszadnik@gmail.com>
  *@package com.pagr.server
  *@license proprietary
- *@version 1.0.0
+ *@version 1.1.0
  */
 
-include "pagr_db.php";
+include_onece(dirname(__FILE__))."/../pagr_db.php";
 
 $startTime = time();  //Global variable to hold a reference to the start time
             // used by timeX60() to calculate accelerated time
@@ -119,11 +117,6 @@ class Restaurant {
         $this->Table = new Table();
         $this->TableGroup = new TableGroup();
         $this->DB = get_pagr_db_connection();
-        if(mysqli_connect_errno($PAGR_database))
-        {
-            $good = "Guest Connection Failed";
-        }
-        echo $good . "<br>";
     }
 
     public function findBestTableGroupForSeatingDB($PATRONID,&$RETURNEDTABLEGROUP) {
@@ -157,41 +150,41 @@ class Restaurant {
         $ShortestExpectedWait = 86400;
         $CurrentExpectedWait = NULL;
 
-        $PartySize_t = $this->$DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PATRONID;");
+        $PartySize_t = $this->DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PATRONID;");
         $PartySize_r = mysqli_fetch_array($PartySize_t);
         $PartySize_v = $PartySize_r['party_size'];
 
         $TableSize = $PartySize_v;
         //see if there are TableGroups of size $TableSize
         while ( $TableSize<10 ) {
-            $TableGroups_t = $this->$DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$TableSize;");
+            $TableGroups_t = $this->DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$TableSize;");
             while ( $TableGroups_r = mysqli_fetch_array($TableGroups_t) ) {
                 $TableGroups_v = $TableGroups_r['tablegroup_id'];
                 //check to see if the table group is occupied
                 //if it is occupied, go to the next table group
-                $TableGroupOccupied_t = $this->$DB->query("SELECT is_occupied FROM tablegroups_t WHERE tablegroup_id=$TableGroups_v;");
+                $TableGroupOccupied_t = $this->DB->query("SELECT is_occupied FROM tablegroups_t WHERE tablegroup_id=$TableGroups_v;");
                 $TableGroupOccupied_r = mysqli_fetch_array($TableGroupOccupied_t);
                 $TableGroupOccupied_v = $TableGroupOccupied_r['is_occupied'];
 
                 if ( $TableGroupOccupied_v ) { //if the group is occupied lets calculate its expected wait time
 
                     //figure out how many people are sitting at the table group
-                    $PartyAtTableGroup_t = $this->$DB->query("SELECT patron_id FROM patron_tablegroup_mapping_t WHERE tablegroup_id=$TableGroups_v;");
+                    $PartyAtTableGroup_t = $this->DB->query("SELECT patron_id FROM patron_tablegroup_mapping_t WHERE tablegroup_id=$TableGroups_v;");
                     $PartyAtTableGroup_r = mysqli_fetch_array($PartyAtTableGroup_t);
                     $PartyAtTableGroup_v = $PartyAtTableGroup_r['patron_id'];
 
-                    $NumberOfPeople_t = $this->$DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PartyAtTableGroup_v;");
+                    $NumberOfPeople_t = $this->DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PartyAtTableGroup_v;");
                     $NumberOfPeople_r = mysqli_fetch_array($NumberOfPeople_t);
                     $NumberOfPeople_v = $NumberOfPeople_r['party_size'];
 
                     //calculate their expected meal end time
                     //first get the expected end time for the tablegroup
-                    $MealStart_t = $this->$DB->query("SELECT time_seated FROM patron_tablegroup_mapping_t WHERE tablegroup_id=$TableGroups_v;");
+                    $MealStart_t = $this->DB->query("SELECT time_seated FROM patron_tablegroup_mapping_t WHERE tablegroup_id=$TableGroups_v;");
                     $MealStart_r = mysqli_fetch_array($MealStart_t);
                     $MealStart_v = $MealStart_r['time_seated'];
 
                     //calculate the average meal length for a party of the size of the one currently at the table group
-                    $AverageLength = avgMealTimeDB($this->$DB,$NumberOfPeople_v);
+                    $AverageLength = avgMealTimeDB($this->DB,$NumberOfPeople_v);
 
                     //find the difference between now and the expected meal end time
                     $CurrentExpectedWait = (($MealStart_v+$AverageLength)-timeX(60));
@@ -205,11 +198,11 @@ class Restaurant {
                     continue;
                 }
                 else { //if the table group is not occupied, start to look at its tables
-                    $TablesInGroup_t = $this->$DB->query("SELECT table_id FROM tablegroup_table_mapping_t WHERE tablegroup_id=$TableGroups_v;");
+                    $TablesInGroup_t = $this->DB->query("SELECT table_id FROM tablegroup_table_mapping_t WHERE tablegroup_id=$TableGroups_v;");
                     while ( $TablesInGroup_r = mysqli_fetch_array($TablesInGroup_t) ) {
                         $TablesInGroup_v = $TablesInGroup_r['table_id'];
                         //get the table information
-                        $TableOccupied_t = $this->$DB->query("SELECT isOccupied FROM table_t WHERE table_id=$TablesInGroup_v;");
+                        $TableOccupied_t = $this->DB->query("SELECT isOccupied FROM table_t WHERE table_id=$TablesInGroup_v;");
                         $TableOccupied_r = mysqli_fetch_array($TableOccupied_t);
                         $TableOccupied_v = $TableOccupied_r['isOccupied'];
                         if ( $TableOccupied_v ) { //the table in the table group is occupied
@@ -218,6 +211,7 @@ class Restaurant {
                     }
                     //all tables in group must be open
                     //so lets see if there is enough time to eat before any reservations!
+                    //TODO
 
                     //return the ID for the TableGroup
                     $RETURNEDTABLEGROUP=$TableGroups_v;
@@ -252,9 +246,9 @@ class Restaurant {
      *
      */
         //associate the table group with the patron/party
-       $result = $this->$DB->query("INSERT INTO patron_tablegroup_mapping_t (patron_id, tablegroup_id, time_seated) VALUES ($PATRONID, $TABLEGROUP,".timeX(60).");");
+       $result = $this->DB->query("INSERT INTO patron_tablegroup_mapping_t (patron_id, tablegroup_id, time_seated) VALUES ($PATRONID, $TABLEGROUP,".timeX(60).");");
         //occupy the table group (this also will occupy all tables in the group)
-        $this->TableGroup->makeOccupied($this->$DB,$TABLEGROUP,$PARTONID);
+        $this->TableGroup->makeOccupied($this->DB,$TABLEGROUP,$PARTONID);
     }
 
     public function unseatGroupDB($PARTY) {
@@ -273,15 +267,15 @@ class Restaurant {
      *
      */
         //see what table group the party was seated at
-        $SeatedAt_t = $this->$DB->query("SELECT tablegroup_id FROM patron_tablegroup_mapping_t WHERE patron_id=$PARTY;");
+        $SeatedAt_t = $this->DB->query("SELECT tablegroup_id FROM patron_tablegroup_mapping_t WHERE patron_id=$PARTY;");
         $SeatedAt_r = mysqli_fetch_array($SeatedAt_t);
         $SeatedAt_v = $SeatedAt_r['tablegroup_id'];
 
         //unseat the group
-        $this->TableGroup->makeUnoccupied($this->$DB,$SeatedAt_v);
+        $this->TableGroup->makeUnoccupied($this->DB,$SeatedAt_v);
 
         //remove the party-tablegroup association from parton_tablegroup_mapping_t
-        $result = $this->$DB->query("DELETE FROM patron_tablegroup_mapping_t WHERE patron_id=$PARTY;");
+        $result = $this->DB->query("DELETE FROM patron_tablegroup_mapping_t WHERE patron_id=$PARTY;");
     }
 
     public function makeReservationDB($PARTY) {
@@ -300,12 +294,12 @@ class Restaurant {
      *  1: The function was able to make a reservation
      */
         //get the party size given the party ID
-        $PartySize_t = $this->$DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PARTY;");
+        $PartySize_t = $this->DB->query("SELECT party_size FROM patrons_t WHERE patron_id=$PARTY;");
         $PartySize_r = mysqli_fetch_array($PartySize_t);
         $PartySize_v = $PartySize_r['party_size'];
 
         //get the party's reservation time
-        $ReservationTime_t = $this->$DB->query("SELECT DISTINCT 
+        $ReservationTime_t = $this->DB->query("SELECT DISTINCT 
                                         EXTRACT(YEAR from reservation_time) AS RES_YEAR, 
                                         EXTRACT(MONTH from reservation_time) AS RES_MONTH, 
                                         EXTRACT(DAY from reservation_time) AS RES_DAY, 
@@ -328,16 +322,16 @@ class Restaurant {
 
         $ReservationTime_v = mktime($HOUR,$MINUTE,0,$MONTH,$DAY,$YEAR);
         //now that we know the party size, lets estimate how long they will need to eat
-        $ExpectedMealTime = $this->avgMealTimeDB($this->$DB,$PartySize_v); 
+        $ExpectedMealTime = $this->avgMealTimeDB($this->DB,$PartySize_v); 
         //now we know the table group must be able to hold that many or more people
         //lets look for the table groups that can
         while ( $PartySize_v<=10 ) {
             //get the table groups of $PartySize
-            $TableGroups_t = $this->$DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$PartySize_v;");
+            $TableGroups_t = $this->DB->query("SELECT tablegroup_id FROM tablegroups_t WHERE size=$PartySize_v;");
             while ( $TableGroups_r = mysqli_fetch_array($TableGroups_t) ) {
                 $TableGroups_v = $TableGroups_r['tablegroup_id'];
                 //look at the reservations for that table group
-                $Reservations_t = $this->$DB->query("SELECT reservation_time, expected_finish_time 
+                $Reservations_t = $this->DB->query("SELECT reservation_time, expected_finish_time 
                                                 FROM tablegroup_reservations_t 
                                                 WHERE tablegroup_id=$TableGroups_v AND expected_finish_time>=$ReservationTime_v 
                                                 ORDER BY reservation_time;");
@@ -353,8 +347,9 @@ class Restaurant {
                         if ( ($Reservations_v2-$Reservations_v1) > $ExpectedMealTime ) {
                             //we know we have enough time to make the reservation!
                             $FinishTime = $ReservationTime_v+$ExpectedMealTime;
-                            $query = $this->$DB->query("INSERT INTO tablegroup_reservations_t (tablegroup_id, reservation_time, expected_finish_time) 
-                                               VALUES ($TableGroups_v, $ReservationTime_v, $FinishTime);");
+                            $query = $this->DB->query("INSERT INTO tablegroup_reservations_t 
+                                                        (tablegroup_id, reservation_time, expected_finish_time, party_id) 
+                                                        VALUES ($TableGroups_v, $ReservationTime_v, $FinishTime, $PARTY);");
                             return 1;
                         }
                         $Reservations_r1 = $Reservations_r2;
@@ -362,8 +357,8 @@ class Restaurant {
                 }
                 else {
                     $FinishTime = $ReservationTime_v+$ExpectedMealTime;
-                    $query = $this->$DB->query("INSERT INTO tablegroup_reservations_t (tablegroup_id, reservation_time, expected_finish_time) 
-                                        VALUES ($TableGroups_v, $ReservationTime_v, $FinishTime);");
+                    $query = $this->DB->query("INSERT INTO tablegroup_reservations_t (tablegroup_id, reservation_time, expected_finish_time, party_id) 
+                                        VALUES ($TableGroups_v, $ReservationTime_v, $FinishTime, $PARTY);");
                     return 1;
                 }
             }
@@ -372,7 +367,25 @@ class Restaurant {
         return 0;
     }
 
-    public function avgMealTimeDB($DB,$PARTYSIZE) {
+    public function removeReservation($PARTY) {
+    /**
+     *PURPOSE:
+     *  To remove a reservation made by a party
+     *
+     *PRECONDITIONS:
+     *  - The parameter PARTY is the party id for the reservation you would like to remove
+     *
+     *POSTCONDITIONS:
+     *  No parameters or global variables are modified
+     *
+     *RETURN VALUE:
+     *  Void
+     *
+     */
+        $qureryResult = $this->DB->query("DELETE FROM tablegroup_reservations_t WHERE party_id=$PARTY;"); 
+    }
+
+    public function avgMealTimeDB($PARTYSIZE) {
     /**
      *PURPOSE:
      *  To calculate the average meal time for parties of a given size
@@ -390,7 +403,7 @@ class Restaurant {
      */
         $NumRows = 0;
         $ReturnValue = 0;
-        $WaitTimesForSize_t = $this->$DB->query("SELECT wait_time FROM wait_times_t WHERE group_size=$PARTYSIZE;");
+        $WaitTimesForSize_t = $this->DB->query("SELECT wait_time FROM wait_times_t WHERE group_size=$PARTYSIZE;");
         if ( !isset($WaitTimesForSize_t) ) {
             return NULL;
         }
@@ -409,4 +422,3 @@ class Restaurant {
 $RestaurantObject = new Restaurant();
 
 ?>
-</body></html>
