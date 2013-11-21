@@ -43,7 +43,10 @@
         </activity>
         <activity android:name="edu.rpi.pagr.AppetizerFragmentActivity" />
         <activity android:name="edu.rpi.pagr.ViewCartActivity" />
-
+        <activity
+            android:name="edu.rpi.pagr.ViewAppetizerActivity"
+            android:label="@string/title_activity_view_appetizer" >
+        </activity>
     </application>
 
 </manifest>

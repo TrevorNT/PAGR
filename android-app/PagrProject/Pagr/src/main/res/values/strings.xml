@@ -42,5 +42,6 @@
     <string name="button_save">Save</string>
     <string name="placeholder_name_guest">Guest</string>
     <string name="title_activity_view_cart">ViewCart</string>
+    <string name="title_activity_view_appetizer">MainActivity</string>
 
 </resources>

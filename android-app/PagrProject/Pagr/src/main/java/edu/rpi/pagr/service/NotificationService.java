@@ -2,7 +2,9 @@ package edu.rpi.pagr.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -28,6 +30,8 @@ public class NotificationService extends Service {
 
     private mThread mthread;
     public boolean isRunning = false;
+    private String mUUID;
+    private String mReservationID;
 
     public IBinder onBind(Intent intent) {
         return null;
@@ -46,13 +50,18 @@ public class NotificationService extends Service {
         super.onDestroy();
         if(!isRunning){
             mthread.interrupt();
-//            mthread.stop();
         }
     }
 
     @Override
     public synchronized void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
+        Bundle b = intent.getExtras();
+        mUUID = b.getString("UUID");
+        mReservationID = b.getString("reservationID");
+
+//        Toast.makeText(getBaseContext(), mReservationID + "@@" + mUUID, Toast.LENGTH_SHORT).show();
+
         if(!isRunning){
             mthread.start();
             isRunning = true;
@@ -61,10 +70,14 @@ public class NotificationService extends Service {
 
     public String getPagr(){
         try {
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("handset_id", mUUID ) ); //mUUID
+            nameValuePairs.add(new BasicNameValuePair("reservation_id", mReservationID ) );
 
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(GatewayConnectionUtils.getApplicationBridgeBase() + GatewayConnectionUtils.getShouldPage());
 
+            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
             HttpResponse response = httpclient.execute(httppost);
 
             StatusLine status = response.getStatusLine();
@@ -100,21 +113,24 @@ public class NotificationService extends Service {
     }
 
     class mThread extends Thread{
-        static final long DELAY = 6000;
+        static final long DELAY = 2000;
         String shouldPage = null;
 
         @Override
-        public void run(){
+        public void run(){ // 1 is notify user, 0 do nothing
             while(isRunning){
                 try {
                     shouldPage = getPagr();
+                    Log.v("Should Page Return Text", shouldPage);
+
                     Thread.sleep(DELAY);
                 } catch (InterruptedException e) {
                     isRunning = false;
                     e.printStackTrace();
                 }
+//                Toast.makeText(getBaseContext(), shouldPage ,Toast.LENGTH_SHORT).show();
 
-                if (shouldPage != "1" ) {
+                if ( shouldPage.equalsIgnoreCase("1") ) {
                     ackPage();
                     notifyUser();
                     isRunning = false;

@@ -4,8 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
@@ -57,6 +60,8 @@ public class AppetizerDetailFragment extends SherlockFragment {
         ImageView samplePicture = (ImageView) getActivity().findViewById(R.id.imageAppetizer);
         description.setText(Appetizer.Description[position]);
         samplePicture.setImageResource(Appetizer.SamplePicture[position]);
+//        EditText quantity = (EditText) getActivity().findViewById(R.id.edit_quantity);
+
         mCurrentPosition = position;
     }
 

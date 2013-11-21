@@ -9,9 +9,28 @@
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:id="@+id/fragment_container"
-        android:layout_above="@+id/button_proceed_to_checkout">
-
+        android:layout_above="@+id/text_quantity_hold_text">
     </FrameLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quantity: "
+        android:id="@+id/text_quantity_hold_text"
+        android:layout_above="@+id/button_proceed_to_checkout"
+        android:layout_alignLeft="@+id/button_proceed_to_checkout"
+        android:layout_marginLeft="17dp"
+        android:visibility="gone" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/edit_quantity"
+        android:layout_gravity="right|bottom"
+        android:layout_above="@+id/button_proceed_to_checkout"
+        android:layout_alignParentRight="true"
+        android:visibility="gone" />
+
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

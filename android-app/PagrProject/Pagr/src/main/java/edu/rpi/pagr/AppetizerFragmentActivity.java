@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -23,6 +25,9 @@ public class AppetizerFragmentActivity extends SherlockFragmentActivity
     private String mReservationID;
     private Button button_proceed_to_checkout;
     private String mAppetizerID;
+    private String mOrderID;
+    private EditText edit_quantity;
+    private TextView quantity_hold_text;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -31,17 +36,27 @@ public class AppetizerFragmentActivity extends SherlockFragmentActivity
 
         Intent intent = getIntent();
         mReservationID = (String) intent.getSerializableExtra("RESERVATION_ID");
+        mOrderID = (String) intent.getSerializableExtra("ORDER_ID");
+
+        edit_quantity = (EditText) findViewById(R.id.edit_quantity);
+        quantity_hold_text = (TextView) findViewById(R.id.text_quantity_hold_text);
+
+        edit_quantity.setVisibility(View.GONE);
+        quantity_hold_text.setVisibility(View.GONE);
 
         button_proceed_to_checkout = (Button) findViewById(R.id.button_proceed_to_checkout);
         button_proceed_to_checkout.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if ( mAppetizerID != null ) {
-//                Toast.makeText(getBaseContext(), mAppetizerID, Toast.LENGTH_SHORT).show();
+                if ( mAppetizerID != null && edit_quantity.getText().toString() != null ) {
+//                Toast.makeText(getBaseContext(), mOrderID, Toast.LENGTH_SHORT).show();
+
 
                     Intent intent = new Intent(getBaseContext(), ViewCartActivity.class);
                     intent.putExtra("ORDER_ITEM", mAppetizerID);
                     intent.putExtra("RESERVATION_ID", mReservationID);
+                    intent.putExtra("ORDER_ID", mOrderID);
+                    intent.putExtra("QUANTITY", edit_quantity.getText().toString());
                     startActivity(intent);
                 }
             }
@@ -101,6 +116,8 @@ public class AppetizerFragmentActivity extends SherlockFragmentActivity
 
             // Commit the transaction
             transaction.commit();
+            edit_quantity.setVisibility(View.VISIBLE);
+            quantity_hold_text.setVisibility(View.VISIBLE);
         }
         mAppetizerID = Appetizer.AppetizerID[position];
     }
