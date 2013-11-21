@@ -1,4 +1,6 @@
 <?php 
+	// INITIAL COMMENT BLOCK
+	//
 	/**
 	 * application_bridge.php
 	 * PAGR External Application Bridge
@@ -26,8 +28,8 @@
 	 * "OK" - server has acknowledged your request.
 	 * "ERROR" - there was an error processing your request (there will be a
 	 *			message after it).
-	 * "0" - only used in should_page(), this means no, should not page.
-	 * "1" - only used in should_page(), this means yes, should page.
+	 * "0" - only used in get_page_status(), this means no, should not page.
+	 * "1" - only used in get_page_status(), this means yes, should page.
 	 * 
 	 * @author Trevor Toryk
 	 * @license Proprietary
@@ -35,14 +37,18 @@
 	 */
 ?>
 <?php
+	// NAMESPACE BLOCK
+	// 
 	// The namespace is used for security by encapsulation.
 	// Basically, now the exec statement will only call functions
 	// in this namespace (on this page).
 	namespace pagr\app_bridge;
-	include 'pagr_db.php';
-//	include 'seating-algorithm/algorithm.php'
+	//include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/pagr_db.php';
+	include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/seating-algorithm/algorithmDB.php'
 ?>
 <?php
+	// FUNCTION CREATION BLOCK
+	//
 	/**
 	 * Creates a new reservation given $_REQUEST['handset_id'].
 	 * 
@@ -58,7 +64,7 @@
 		// NOTE: reservation_time MUST be in the following format: "YYYY-MM-DD HH:MM:SS"
 		//	(checking this will be reserved to the database though, as it is more efficient)
 		$RESERVATION_TIME = NULL;
-		if (!isset($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
+		if (!empty($_REQUEST['reservation_time'])) $RESERVATION_TIME = $_REQUEST['reservation_time'];
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -73,7 +79,7 @@
 		if (!empty($RESERVATION_TIME)) $RESERVATION_TIME = str_replace(";", "", $RESERVATION_TIME);
 		
 		// Run the query and fetch the results
-		$RESULT = $DB->query("SELECT count(*) FROM patrons_t WHERE android_id = '$HANDSET_ID'");
+		$RESULT = $DB->query("SELECT count(*) FROM patrons_t WHERE android_id = '$HANDSET_ID' AND is_deleted = 0;");
 		$EXISTS = $RESULT->fetch_row()[0];
 		
 		// If the one result (which is a count(*)) is 0 and a $RESERVATION_TIME has been specified, insert a new reservation.
@@ -100,7 +106,18 @@
 			
 			// Return the walk-in's ID number.
 			$RESULT = $DB->query("SELECT patron_id FROM patrons_t WHERE android_id = '$HANDSET_ID';");
-			echo $RESULT->fetch_row()[0];
+			$PATRON_ID = $RESULT->fetch_row()[0];
+			echo $PATRON_ID;
+			
+			$TABLEGROUP_ID = null;
+			// Now, from algorithmDB's Restaurant object, determine the wait time for the walk-in.
+			$TIME_IN_SECONDS = $RestaurantObject->findBestTableGroupForSeatingDB($PATRON_ID, $TABLEGROUP_ID);
+			
+			if (empty($TIME_IN_SECONDS)) die("ERROR: blame Jake, as something in RestaurantObject is returning null");
+			else {
+				$TIME_IN_MINUTES = (int)($TIME_IN_SECONDS / 60);
+				echo ",$TIME_IN_MINUTES";
+			}
 		}
 		else die("ERROR: reservation exists");
 	}
@@ -126,7 +143,7 @@
 		$HANDSET_ID = str_replace(";", "", $HANDSET_ID);
 		
 		// Run the query, return the result
-		$RESULT = $DB->query("SELECT name, party_size, reservation_time FROM patrons_t WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID LIMIT 1;");
+		$RESULT = $DB->query("SELECT name, party_size, reservation_time FROM patrons_t WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID AND is_deleted = 0 LIMIT 1;");
 		if ($RESULT === false) {
 			$ERROR = $DB->error;
 			echo "ERROR: $ERROR";
@@ -149,7 +166,7 @@
 	 * Make a change to the reservation using $_REQUEST['reservation_id'] and
 	 * $_REQUEST['reservation_time'].
 	 * 
-	 * @return Boolean True if the reservation time change was successful, -3 if not.
+	 * @return String OK if the reservation time change was successful, ERROR if not.
 	 */
 	function modify_reservation() {
 		// PRECONDITION: handset_id, reservation_id must be specified
@@ -178,15 +195,15 @@
 		
 		// Both changed
 		if (!empty($PARTY_SIZE) && !empty($RESERVATION_TIME)) {
-			$RESULT = $DB->query("UPDATE patrons_t SET party_size = $PARTY_SIZE AND reservation_time = $RESERVATION_TIME WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID;");
+			$RESULT = $DB->query("UPDATE patrons_t SET party_size = $PARTY_SIZE AND reservation_time = $RESERVATION_TIME WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID AND is_deleted = 0;");
 		}
 		// Only the party size changed
 		elseif (!empty($PARTY_SIZE)) {
-			$RESULT = $DB->query("UPDATE patrons_t SET party_size = $PARTY_SIZE WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID;");
+			$RESULT = $DB->query("UPDATE patrons_t SET party_size = $PARTY_SIZE WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID AND is_deleted = 0;");
 		}
 		// Only the reservation time changed
 		elseif (!empty($RESERVATION_TIME)) {
-			$RESULT = $DB->query("UPDATE patrons_t SET reservation_time = $RESERVATION_TIME WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID;");
+			$RESULT = $DB->query("UPDATE patrons_t SET reservation_time = $RESERVATION_TIME WHERE android_id = '$HANDSET_ID' AND patron_id = $PATRON_ID AND is_deleted = 0;");
 		}
 		
 		// Run the query, return the result
@@ -207,31 +224,119 @@
 	 */
 	function check_wait_time() {
 		// This is just a call to a function in seating-algorithm/algorithm.php
+		
 	}
 	
 	/**
+	 * This function creates a new order associated with a reservation ID.  For security,
+	 * you must also specify handset ID.  (Wouldn't want to have other people ordering for
+	 * you, now, would you?)
 	 * 
+	 * @return Mixed Order ID as integer if successful, ERROR if not.
 	 */
-	function make_order() {
-		echo "create an order!";
+	function create_order() {
+		// PRECONDITION: handset_id, reservation_id must be set
+		if (empty($_REQUEST['handset_id'])) die("ERROR: handset_id required");
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
 		
-		// This function allows you to create a new order for a reservation (or
-		// modify an existing one by setting a new order).
-		// if (exists(order_id))
-		//		set order_details to DB;
-		//		return true;
-		// else if (not exists(order_id) and exists(new_order_details))
-		//		create new order_details;
-		//		return new_order_id;
-		// else
-		//		return -4;
+		// Set reservation_id, get DB connection
+		$RESERVATION_ID = (int)$_REQUEST['reservation_id'];
+		$HANDSET_ID = $_REQUEST['handset_id'];
+		$DB = get_pagr_db_connection();
+		
+		// Simple injection attack prevention; by removing a semicolon, you can
+		// prevent a SQL injection attack by creating a string that is not
+		// SQL-compliant and will force a MySQL error.
+		$HANDSET_ID = str_replace(";", "", $HANDSET_ID);
+		
+		// Check to make sure that the given reservation ID exists (with the given handset id)
+		$RESULT = $DB->query("SELECT count(*) FROM patrons_t WHERE patron_id = $RESERVATION_ID AND android_id = '$HANDSET_ID' AND is_deleted = 0;");
+		if ($RESULT->fetch_row()[0] == 0) die("ERROR: the given handset ID and reservation ID pair does not exist");
+		
+		// Check to make sure that an order ID doesn't exist for the given reservation ID
+		$RESULT = $DB->query("SELECT count(*) FROM order_mapping_t WHERE patron_id = $RESERVATION_ID;");
+		if ($RESULT->fetch_row()[0] == 0) {
+			// And finally, create the order and return the new order ID
+			$DB->query("INSERT INTO order_mapping_t (patron_id) VALUES ($RESERVATION_ID);");
+			if ($RESULT === false) {
+				$ERROR = $DB->error;
+				die("ERROR: $ERROR");
+			}
+			$RESULT = $DB->query("SELECT order_id FROM order_mapping_t WHERE patron_id = $RESERVATION_ID LIMIT 1;");
+			echo $RESULT->fetch_row()[0];
+		}
 	}
 	
 	/**
+	 * Given reservation ID and order ID, as well as item # and quantity, creates a new item
+	 * order for the order in question.
 	 * 
+	 * Two quick notes on this function:
+	 *		- You can delete items using this function!  Just pass the item ID and quantity 0.
+	 *		- If you send an item ID that already exists for the given order, it is *overwritten* with the new quantity.
+	 * 
+	 * @return String OK if acknowledged, ERROR if there is a problem.
 	 */
-	function add_change_order_item() {
+	function add_order_item() {
+		// PRECONDITION: reservation_id, order_id, item_id, and quantity must be set:
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['order_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['item_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['quantity'])) die("ERROR: reservation_id required");
 		
+		// Set all the many variables, incl. the database
+		$RESERVATION_ID = (int)$_REQUEST['reservation_id'];
+		$ORDER_ID = (int)$_REQUEST['order_id'];
+		$ITEM_ID = (int)$_REQUEST['item_id'];
+		$QUANTITY = (int)$_REQUEST['quantity'];
+		$DB = get_pagr_db_connection();
+		
+		// Check to make sure that the RESERVATION_ID, ORDER_ID pair is valid
+		$RESULT = $DB->query("SELECT count(*) FROM order_mapping_t WHERE reservation_id = $RESERVATION_ID AND order_id = $ORDER_ID;");
+		if ($RESULT === false) {
+			$ERROR = $DB->error;
+			die("ERROR: $ERROR");
+		}
+		if ($RESULT->fetch_row()[0] == 0) die("ERROR: the given reservation_id and order_id pair does not exist");
+		
+		// We have, naturally, 3 cases here, each corresponding to a different SQL operation:
+		//		1. Quantity == 0.  In this case, that particular item is being deleted entirely.  (SQL: DELETE FROM)
+		//		2. On first query, item_id already exists for that order id.  Update quantity.  (SQL: UPDATE)
+		//		3. On first query, item_id does not exist for that order id.  Insert new order item.  (SQL: INSERT INTO)
+		if ($QUANTITY == 0) {
+			$RESULT = $DB->query("DELETE FROM order_t WHERE order_id = $ORDER_ID AND item_id = $ITEM_ID;");
+			if ($RESULT === false) {
+				$ERROR = $DB->error;
+				die("ERROR: $ERROR");
+			}
+		}
+		else {
+			$RESULT = $DB->query("SELECT count(*) FROM order_t WHERE order_id = $ORDER_ID AND item_id = $ITEM_ID;");
+			if ($RESULT === false) {
+				$ERROR = $DB->error;
+				die("ERROR: $ERROR");
+			}
+			
+			$EXISTS = (int)$RESULT->fetch_row()[0];
+			
+			if ($EXISTS == 0) {
+				$RESULT = $DB->query("INSERT INTO order_t (order_id, item_id, quantity) VALUES ($ORDER_ID, $ITEM_ID, $QUANTITY);");
+				if ($RESULT === false) {
+					$ERROR = $DB->error;
+					die("ERROR: $ERROR");
+				}
+			}
+			else {
+				$RESULT = $DB->query("UPDATE order_t SET quantity = $QUANTITY WHERE order_id = $ORDER_ID AND item_id = $ITEM_ID;");
+				if ($RESULT === false) {
+					$ERROR = $DB->error;
+					die("ERROR: $ERROR");
+				}
+			}
+		}
+		
+		// Thanks to all the error checking along the way, all that remains is to return an acknowledgement.
+		echo "OK";
 	}
 	
 	/**
@@ -361,8 +466,12 @@
 	}
 ?>
 <?php
+	// PROCEDURAL BLOCK
+	// 
 	// Simply calls the function given in $_REQUEST['pagr_exec'] provided
 	// it is within this namespace.  (And provided it exists.)
 	if (empty($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined');
 	call_user_func("pagr\app_bridge\\" . $_REQUEST['pagr_exec']);
+	
+	$RR = new \Restaurant();
 ?>
