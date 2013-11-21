@@ -287,9 +287,9 @@
 	function add_order_item() {
 		// PRECONDITION: reservation_id, order_id, item_id, and quantity must be set:
 		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
-		if (empty($_REQUEST['order_id'])) die("ERROR: reservation_id required");
-		if (empty($_REQUEST['item_id'])) die("ERROR: reservation_id required");
-		if (empty($_REQUEST['quantity'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['order_id'])) die("ERROR: order_id required");
+		if (empty($_REQUEST['item_id'])) die("ERROR: item_id required");
+		if (empty($_REQUEST['quantity'])) die("ERROR: quantity required");
 		
 		// Set all the many variables, incl. the database
 		$RESERVATION_ID = (int)$_REQUEST['reservation_id'];
@@ -299,7 +299,7 @@
 		$DB = get_pagr_db_connection();
 		
 		// Check to make sure that the RESERVATION_ID, ORDER_ID pair is valid
-		$RESULT = $DB->query("SELECT count(*) FROM order_mapping_t WHERE reservation_id = $RESERVATION_ID AND order_id = $ORDER_ID;");
+		$RESULT = $DB->query("SELECT count(*) FROM order_mapping_t WHERE patron_id = $RESERVATION_ID AND order_id = $ORDER_ID;");
 		if ($RESULT === false) {
 			$ERROR = $DB->error;
 			die("ERROR: $ERROR");
