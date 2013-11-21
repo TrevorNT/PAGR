@@ -16,6 +16,7 @@
 	 * below)
 	 *
 	 * All remaining fields are dependent on the pagr_exec you're calling:
+	 * (TODO: fix this!)
 	 * 
 	 *      $_REQUEST field     |      What it is
 	 * -------------------------+-----------------------
@@ -43,8 +44,8 @@
 	// Basically, now the exec statement will only call functions
 	// in this namespace (on this page).
 	namespace pagr\app_bridge;
-	//include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/pagr_db.php';
-	include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/seating-algorithm/algorithmDB.php'
+	include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/pagr_db.php';
+	//include $_SERVER['DOCUMENT_ROOT'] . '/PAGR/php/seating-algorithm/algorithmDB.php'
 ?>
 <?php
 	// FUNCTION CREATION BLOCK
@@ -120,6 +121,9 @@
 			}
 		}
 		else die("ERROR: reservation exists");
+		
+		// Close the connection.
+		$DB->close();
 	}
 	
 	/**
@@ -265,6 +269,9 @@
 			$RESULT = $DB->query("SELECT order_id FROM order_mapping_t WHERE patron_id = $RESERVATION_ID LIMIT 1;");
 			echo $RESULT->fetch_row()[0];
 		}
+		
+		// Close the connection.
+		$DB->close();
 	}
 	
 	/**
@@ -337,24 +344,46 @@
 		
 		// Thanks to all the error checking along the way, all that remains is to return an acknowledgement.
 		echo "OK";
+		
+		// Close the connection.
+		$DB->close();
 	}
 	
 	/**
+	 * Gets the item ID's and quantities of each item in an order.
 	 * 
+	 * @return String A string in the format <item_id>:<quantity>; for each item.  Returns "ERROR" followed by an error message if an error was encountered.
 	 */
 	function get_order() {
-		echo "get an order!";
+		// PRECONDITION: reservation_id, order_id must be specified
+		if (empty($_REQUEST['reservation_id'])) die("ERROR: reservation_id required");
+		if (empty($_REQUEST['order_id'])) die("ERROR: order_id required");
 		
-		// This function allows you to get the current order for the user.
-		// if (exists(order_id))
-		//		get order_details from DB;
-		//		return order_details;
-		// else
-		//		return "";
-		//
-		// In this case, an empty string simply means "no data".  It could be
-		// that the handset doesn't have an order out, or that the handset also
-		// has no reservation.
+		// Connect to the database, set local variables
+		$DB = get_pagr_db_connection();
+		$RESERVATION_ID = $_REQUEST['reservation_id'];
+		$ORDER_ID = $_REQUEST['order_id'];
+		
+		// Authenticate the reservation ID, order ID pair
+		$RESULT = $DB->query("SELECT count(*) FROM order_mapping_t WHERE order_id = $ORDER_ID AND patron_id = $RESERVATION_ID;");
+		if ($RESULT === false) {
+			$ERROR = $DB->error;
+			die("ERROR: $ERROR");
+		}
+		elseif ((int)$RESULT->fetch_row()[0] == 0) die("ERROR: the given reservation_id and order_id pair does not exist");
+		else {
+			// Now that it is authenticated, get all of the order data.
+			$RESULT = $DB->query("SELECT item_id, quantity FROM order_t WHERE order_id = $ORDER_ID;");
+			$ROW = null;
+			while ($ROW = $RESULT->fetch_array()) {
+				$ITEM = $ROW['item_id'];
+				$QUANTITY = $ROW['quantity'];
+				echo "$ITEM:$QUANTITY;";
+			}
+		}
+		
+		// Close the connection.
+		$DB->close();
 	}
 	
 	/**
@@ -364,7 +393,7 @@
 	 */
 	function get_item() {
 		// PRECONDITION: item_id must be set.
-		if (empty($_REQUEST['item_id'])) die("ERROR: item_id must be set");
+		if (empty($_REQUEST['item_id'])) die("ERROR: item_id required");
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
@@ -386,6 +415,9 @@
 			$PIC = $ROW[4];
 			echo "name=$ITEM_NAME;desc=$ITEM_DESC;price=$ITEM_PRICE;drink=$IS_DRINK;picture=$PIC;";
 		}
+		
+		// Close the connection
+		$DB->close();
 	}
 	
 	/**
@@ -473,5 +505,5 @@
 	if (empty($_REQUEST['pagr_exec'])) die('ERROR: pagr_exec must be defined');
 	call_user_func("pagr\app_bridge\\" . $_REQUEST['pagr_exec']);
 	
-	$RR = new \Restaurant();
+	//$RR = new \Restaurant();
 ?>
