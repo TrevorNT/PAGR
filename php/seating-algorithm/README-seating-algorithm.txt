@@ -45,6 +45,9 @@ Author: Jacob Zadnik
         - Defined API
         - Known Issue
             o The seating algorithm does not look for future reservations
+
+    1.1.0:
+        - Added removeReservation() to the API
           
 ##############################
 ## Version numbering scheme ##
