@@ -40,6 +40,11 @@ Author: Jacob Zadnik
           reservation time
         - Added a new function, timeX(), that 'speeds up' time passed
           since the start of the party. Full details in comments in source
+
+    1.0.0:
+        - Defined API
+        - Known Issue
+            o The seating algorithm does not look for future reservations
           
 ##############################
 ## Version numbering scheme ##
