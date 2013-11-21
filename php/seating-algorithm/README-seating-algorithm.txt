@@ -48,6 +48,11 @@ Author: Jacob Zadnik
 
     1.1.0:
         - Added removeReservation() to the API
+
+    1.2.0:
+        - Complete rewrite Table and TableGroup classes
+        - Worked out the bugs with database queries
+
           
 ##############################
 ## Version numbering scheme ##
