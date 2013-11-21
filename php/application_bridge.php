@@ -69,7 +69,7 @@
 		
 		// Connect to the database, set the local variables
 		$DB = get_pagr_db_connection();
-		$HANDSET_ID = (int)$_REQUEST['handset_id'];
+		$HANDSET_ID = $_REQUEST['handset_id'];
 		$PATRON_NAME = $_REQUEST['patron_name'];
 		$PARTY_SIZE = (int)$_REQUEST['party_size'];
 		
@@ -81,7 +81,7 @@
 		
 		// Run the query and fetch the results
 		$RESULT = $DB->query("SELECT count(*) FROM patrons_t WHERE android_id = '$HANDSET_ID' AND is_deleted = 0;");
-		$EXISTS = $RESULT->fetch_row()[0];
+		$EXISTS = (int)$RESULT->fetch_row()[0];
 		
 		// If the one result (which is a count(*)) is 0 and a $RESERVATION_TIME has been specified, insert a new reservation.
 		if ($EXISTS == 0 && !empty($RESERVATION_TIME)) {
@@ -110,15 +110,15 @@
 			$PATRON_ID = $RESULT->fetch_row()[0];
 			echo $PATRON_ID;
 			
-			$TABLEGROUP_ID = null;
+			//$TABLEGROUP_ID = null;
 			// Now, from algorithmDB's Restaurant object, determine the wait time for the walk-in.
-			$TIME_IN_SECONDS = $RestaurantObject->findBestTableGroupForSeatingDB($PATRON_ID, $TABLEGROUP_ID);
+			//$TIME_IN_SECONDS = $RestaurantObject->findBestTableGroupForSeatingDB($PATRON_ID, $TABLEGROUP_ID);
 			
-			if (empty($TIME_IN_SECONDS)) die("ERROR: blame Jake, as something in RestaurantObject is returning null");
-			else {
-				$TIME_IN_MINUTES = (int)($TIME_IN_SECONDS / 60);
-				echo ",$TIME_IN_MINUTES";
-			}
+			//if (empty($TIME_IN_SECONDS)) die("ERROR: blame Jake, as something in RestaurantObject is returning null");
+			//else {
+			//	$TIME_IN_MINUTES = (int)($TIME_IN_SECONDS / 60);
+			//	echo ",$TIME_IN_MINUTES";
+			//}
 		}
 		else die("ERROR: reservation exists");
 		
