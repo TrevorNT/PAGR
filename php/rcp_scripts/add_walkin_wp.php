@@ -33,12 +33,17 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container" align = "left">
 
-      <div class="starter-template">
+      <div class="starter-template" align = "left">
 	<form method="Post" action= "add_walkin_customer.php">
-		Name:  <input type="text" name="first_name"> </br>
-		Phone: <input type="text" name="phone_number"> </br>
+		<font face="courier new" align = "left">Name:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp  
+		<input type="text" name="first_name"> </font></br>
+		
+		<font face="courier new">Phone:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp 
+		<input type="text" name="phone_number"> </font></br>
+		
+		<font face="courier new">Party Size:&nbsp  <input type="text" name="party_size"></font></br>
 		<br>
 		<input type="submit" class="btn btn-lg btn-primary" value = "Submit" align = bottom>
 		

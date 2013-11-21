@@ -7,7 +7,7 @@ function createTableJS(x, y, width, height, table_id, isOccupied, init)
     // Create the canvas on the first call to the function.
     if (init == 1)
     {
-       createTableJS.paper = new Raphael(document.getElementById("table_container"), 400, 250);
+       createTableJS.paper = new Raphael(document.getElementById("table_container"), 310, 250);
     }
     
     paper = createTableJS.paper;
