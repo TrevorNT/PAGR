@@ -157,7 +157,8 @@
                                            WHERE
                                                 patron_id = ".$_POST["customer"]."
                                                 AND android_id IS NOT NULL;");
-                                                
+             
+        // The guest has an Android uuid.                                   
         if($GET_CUST->num_rows > 0)
         {
             // Set the page attribute for the guest to 1.
@@ -170,6 +171,7 @@
         }
         else
         {
+            // The guest will have to be called manually.
             $GET_CUST = $PAGR_database->query("SELECT patron_id, phone_number FROM patrons_t
                                                 
                                                 WHERE
@@ -192,7 +194,7 @@
     }
     elseif(isset($_POST['delete']))
     {
-        // Set the page attribute for the guest to 1.
+        // Set the is_deleted attribute for the guest to 1.
         $PAGR_database->query("UPDATE patrons_t SET is_deleted = 1 WHERE patron_id = "
                               . $_POST["customer"]);
         echo "<h1 align = 'center'> Customer with ID ".$_POST['customer']." deleted. </h1>";
@@ -203,10 +205,70 @@
 	elseif(isset($_POST['seat_customer']))
 	{
 		$RETURNEDTABLEGROUP = 0;
-		$FOUND_TABLE = $RestaurantObject->findBestTableGroupForSeatingDB($_POST["customer"],
+		$SEATING_RET = $RestaurantObject->findBestTableGroupForSeatingDB($_POST["customer"],
 																		 $RETURNEDTABLEGROUP);
 	
-		$RestaurantObject->seatGroupDB($_POST["customer"], $RETURNEDTABLEGROUP);
+	   /*
+	    echo (0 == Null);
+	    if ($SEATING_RET == Null)
+	    {
+	        echo "<h1 align = 'center'> Customer with ID ".$_POST['customer']." cannot be".
+                  " seated. </h1>";
+                  
+            echo "<h3 align = 'center'> The party may be too large to be seated automatically.</h3>";
+            
+        } */
+        
+        if($SEATING_RET > 0)
+        {
+            echo "<h1 align = 'center'> Customer with ID ".$_POST['customer']." will have to".
+                  " wait to be seated. </h1>";
+                  
+            echo "<h3 align = 'center'> The wait time is: $SEATING_RET</h3>";
+            
+        }
+        else
+        {
+		    $RestaurantObject->seatGroupDB($_POST["customer"], $RETURNEDTABLEGROUP);
+		    
+		    $TABLES = $PAGR_database->query("SELECT table_id FROM tablegroup_table_mapping_t
+		                                     WHERE
+		                                        tablegroup_table_mapping_t.tablegroup_id = 
+		                                        $RETURNEDTABLEGROUP;");
+		    
+		    echo "<h1 align = 'center'> Customer with ID ".$_POST['customer']." has been".
+                  " seated. </h1>";
+                  
+            $counter = 0;
+            
+            $MAX_ROWS = $TABLES->num_rows;
+            $TABLE_STRING = "";
+            while($ROW = mysqli_fetch_array($TABLES))
+            {
+                // More than one table left.
+                if($counter < $MAX_ROWS - 1)
+                {
+                    // Append a comma to the end of the table name.
+                    $TABLE_STRING = $TABLE_STRING.$ROW['table_id'].", ";
+                }
+                
+                else
+                {
+                      $TABLE_STRING = $TABLE_STRING.$ROW['table_id'].".";
+                      
+                }
+                
+                $counter++;
+            }  
+            
+            echo "<h3 align = 'center'> The customer has been seated at table(s): ".
+                  $TABLE_STRING."</h3>";
+		                                        
+		}
+		
+		echo '<div align = "center"><input type = "button" align = "top"
+	                onClick="window.location.href = \'../index.php\'"  value = "Go Back" >
+	                </input> </div>';
 	}
     
     

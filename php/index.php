@@ -154,7 +154,7 @@
     </div><!-- /.container -->
 
     <div class="col-md-4">
-            <h4 align = "center"> <?php echo "hello world" ?> </h4>
+            <h4 align = "center"> </h4>
             <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
 				<form method="Post" action= "/rcp_scripts/action_button.php">

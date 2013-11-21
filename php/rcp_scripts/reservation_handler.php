@@ -54,7 +54,7 @@
             $MONTH =  $DATE_ROW["RES_MONTH"];
             $DAY =  $DATE_ROW["RES_DAY"];
             $YEAR =  $DATE_ROW["RES_YEAR"];
-            $RESERVATIONS = $PAGR_database->query("SELECT name, party_size, patron_id,
+            $RESERVATIONS = $PAGR_database->query("SELECT name, party_size, patron_id, is_deleted,
                                                          
                                                           
                                                           EXTRACT(HOUR FROM reservation_time) AS Hour,
@@ -82,62 +82,65 @@
            echo "<ol>";
            while($ENTRY_ROW = mysqli_fetch_array($RESERVATIONS))
            {
-                $NAME = $ENTRY_ROW['name'];
-			    $DISPLAY_NAME = "";
-			    $ID = $ENTRY_ROW['patron_id'];
-			    
-			    // Make sure that the time is in an hh:mm format.
-			    $HOUR = "";
-			    $MINUTE = "";
-			    if(strlen($ENTRY_ROW['Hour'] < 2))
-			    {
-			        $HOUR = "0".$ENTRY_ROW['Hour'];
-			    }
-			    else
-			    {
-			        $HOUR = $ENTRY_ROW['Hour'];
-			    }
-			    
-			    if(strlen($ENTRY_ROW['Minute'] < 2))
-			    {
-			        $MINUTE = "0".$ENTRY_ROW['Minute'];
-			    }
-			    else
-			    {
-			        $MINUTE = $ENTRY_ROW['Minute'];
-			    }
+                if($ENTRY_ROW['is_deleted'] == 0)
+                {
+                    $NAME = $ENTRY_ROW['name'];
+			        $DISPLAY_NAME = "";
+			        $ID = $ENTRY_ROW['patron_id'];
 			        
-			    $TIME = $HOUR.":".$MINUTE;
-			    
-			    /* Grab the first 7 characters of the name.
-			    If the name is less than 7 characters, pad the
-			    right side with spaces. */
-			    for($i = 0; $i < 7; $i++)
-			    {
-			        if($i < strlen($NAME))
+			        // Make sure that the time is in an hh:mm format.
+			        $HOUR = "";
+			        $MINUTE = "";
+			        if(strlen($ENTRY_ROW['Hour'] < 2))
 			        {
-			            $DISPLAY_NAME = $DISPLAY_NAME.$NAME[$i];
+			            $HOUR = "0".$ENTRY_ROW['Hour'];
 			        }
-			        
 			        else
 			        {
-			            $DISPLAY_NAME = $DISPLAY_NAME."&nbsp";
+			            $HOUR = $ENTRY_ROW['Hour'];
 			        }
-			    }
-			    
-			    // Display the reservation information.
-			    if($ID < 10)
-			    {
-				    echo "<li> <font face='courier new'><b>ID:</b>".$ID."&nbsp".$DISPLAY_NAME.
-				     "&nbsp<b>Time:</b> ".$TIME."&nbsp<b>Party Size:</b> "
-				     .$ENTRY_ROW['party_size']."</font></li>";
-				}
+			        
+			        if(strlen($ENTRY_ROW['Minute'] < 2))
+			        {
+			            $MINUTE = "0".$ENTRY_ROW['Minute'];
+			        }
+			        else
+			        {
+			            $MINUTE = $ENTRY_ROW['Minute'];
+			        }
+			            
+			        $TIME = $HOUR.":".$MINUTE;
+			        
+			        /* Grab the first 7 characters of the name.
+			        If the name is less than 7 characters, pad the
+			        right side with spaces. */
+			        for($i = 0; $i < 7; $i++)
+			        {
+			            if($i < strlen($NAME))
+			            {
+			                $DISPLAY_NAME = $DISPLAY_NAME.$NAME[$i];
+			            }
+			            
+			            else
+			            {
+			                $DISPLAY_NAME = $DISPLAY_NAME."&nbsp";
+			            }
+			        }
+			        
+			        // Display the reservation information.
+			        if($ID < 10)
+			        {
+				        echo "<li> <font face='courier new'><b>ID:</b>".$ID."&nbsp".$DISPLAY_NAME.
+				         "&nbsp<b>Time:</b> ".$TIME."&nbsp<b>Party Size:</b> "
+				         .$ENTRY_ROW['party_size']."</font></li>";
+				    }
 				
-				else
-				{
-				    echo "<li> <font face='courier new'><b>ID:</b>&nbsp".$ID."&nbsp".$DISPLAY_NAME.
-				     "&nbsp<b>Time:</b> ". $TIME."&nbsp<b> Size:</b> "
-				     .$ENTRY_ROW['party_size']."</font></li>";
+				    else
+				    {
+				        echo "<li> <font face='courier new'><b>ID:</b>&nbsp".$ID."&nbsp".$DISPLAY_NAME.
+				         "&nbsp<b>Time:</b> ". $TIME."&nbsp<b> Size:</b> "
+				         .$ENTRY_ROW['party_size']."</font></li>";
+				    }
 				}
 				
 		    }

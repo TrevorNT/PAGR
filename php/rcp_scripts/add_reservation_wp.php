@@ -69,7 +69,7 @@
         <!-- Dropdown menus for the time. -->
         <select name = "hour">
             <?php
-                echo "<option value = hour> HOUR </option>";
+                echo "<option value = 'hour'> HOUR </option>";
                 for($i = 8; $i < 24; $i++)
                 {
                     echo "<option value = $i> $i </option>";
@@ -81,7 +81,7 @@
          : 
          <select name = "minute">
             <?php
-                echo "<option value = minute> MIN </option>";
+                echo "<option value = 'minute'> MIN </option>";
                 for($i = 0; $i < 59; $i = $i + 15)
                 {
                     if($i < 10)

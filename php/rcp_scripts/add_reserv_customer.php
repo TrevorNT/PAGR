@@ -33,9 +33,6 @@
 		$HOUR =  $_POST['hour'];
 		$MINUTE = $_POST['minute'];
 		
-		
-		$HOUR = (int) $HOUR;
-		$MINUTE = (int) $MINUTE;
 	
 		$ERROR = false;
 		
@@ -48,9 +45,8 @@
 			$ERROR = True;
 		}
 		
-		elseif($DATE == false or $HOUR == "HOUR" or $MINUTE == "MIN")
+		elseif($DATE == false or $HOUR == "hour" or $MINUTE == "minute")
 		{
-		    
 		    echo "<h4 align = 'center'>ERROR: Data invalid.</h4><br>
 			  The guest has not been added to the queue.
 			  <br>A reservation time or date was not specified.";
@@ -58,23 +54,30 @@
 			  $ERROR = True;
         }
         
+        $HOUR = (int) $HOUR;
+		$MINUTE = (int) $MINUTE;
+        
         list($MONTH, $DAY, $YEAR) = explode('/', $DATE);
         
+        date_default_timezone_set('America/New_York');
         $MONTH = (int) $MONTH;
         $DAY = (int) $DAY;
         $YEAR = (int) $YEAR;
         
         $CUR_TIME = time();
-        $REQ_TIME = mktime((int)$HOUR,$MINUTE,0,$MONTH,$DAY,$YEAR);
+        $REQ_TIME = gmmktime((int)$HOUR,$MINUTE,0,$MONTH,$DAY,$YEAR);
+       
+       
         
-        if($REQ_TIME  < $CUR_TIME)
+        if($REQ_TIME < $CUR_TIME)
         {
              echo "<h4 align = 'center'>ERROR: Data invalid.</h4><br>
 			  The guest has not been added to the queue.
 			  <br> The time specified has already passed.";
             $ERROR = True;
         }
-        
+       
+		
         
         if($ERROR == False)
         {
