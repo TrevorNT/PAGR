@@ -6,7 +6,8 @@
  *@version 1.1.0
  */
 
-include_onece(dirname(__FILE__))."/../pagr_db.php";
+//include_onece(dirname(__FILE__))."/../pagr_db.php";
+include pagr_db.php;
 
 $startTime = time();  //Global variable to hold a reference to the start time
             // used by timeX60() to calculate accelerated time
@@ -118,6 +119,40 @@ class Restaurant {
         $this->TableGroup = new TableGroup();
         $this->DB = get_pagr_db_connection();
     }
+
+    public function avgMealTimeDB($PARTYSIZE) {
+    /**
+     *PURPOSE:
+     *  To calculate the average meal time for parties of a given size
+     *
+     *PRECONDITIONS:
+     *  - The parameter PARTYSIZE must be a positive integer referencing the size of the party
+     *
+     *POSTCONDITIONS:
+     *  No parameters or global varables are modified
+     *
+     *RETURN VALUES:
+     *  NULL: could not calculate the average meal time
+     *
+     *  A positive integer: the average meal time in seconds
+     */
+        $NumRows = 0;
+        $ReturnValue = 0;
+        $WaitTimesForSize_t = $this->DB->query("SELECT wait_time FROM wait_times_t WHERE group_size=$PARTYSIZE;");
+        if ( !isset($WaitTimesForSize_t) ) {
+            return NULL;
+        }
+        while ( $WaitTimesForSize_r = mysqli_fetch_array($WaitTimesForSize_t) ) {
+            ++$NumRows;
+            $WaitTimesForSize_v = $WaitTimesForSize_r['wait_time'];
+            $ReturnValue+=$WaitTimesForSize_v;
+        }
+        //divide $ReturnValue by the number of values to get the average
+        $ReturnValue = $ReturnValue/$NumRows;
+
+        return $ReturnValue;
+    }
+}
 
     public function findBestTableGroupForSeatingDB($PATRONID,&$RETURNEDTABLEGROUP) {
     /**
@@ -366,7 +401,7 @@ class Restaurant {
         }
         return 0;
     }
-
+/*
     public function removeReservation($PARTY) {
     /**
      *PURPOSE:
@@ -381,44 +416,21 @@ class Restaurant {
      *RETURN VALUE:
      *  Void
      *
-     */
         $qureryResult = $this->DB->query("DELETE FROM tablegroup_reservations_t WHERE party_id=$PARTY;"); 
     }
-
-    public function avgMealTimeDB($PARTYSIZE) {
-    /**
-     *PURPOSE:
-     *  To calculate the average meal time for parties of a given size
-     *
-     *PRECONDITIONS:
-     *  - The parameter PARTYSIZE must be a positive integer referencing the size of the party
-     *
-     *POSTCONDITIONS:
-     *  No parameters or global varables are modified
-     *
-     *RETURN VALUES:
-     *  NULL: could not calculate the average meal time
-     *
-     *  A positive integer: the average meal time in seconds
-     */
-        $NumRows = 0;
-        $ReturnValue = 0;
-        $WaitTimesForSize_t = $this->DB->query("SELECT wait_time FROM wait_times_t WHERE group_size=$PARTYSIZE;");
-        if ( !isset($WaitTimesForSize_t) ) {
-            return NULL;
-        }
-        while ( $WaitTimesForSize_r = mysqli_fetch_array($WaitTimesForSize_t) ) {
-            ++$NumRows;
-            $WaitTimesForSize_v = $WaitTimesForSize_r['wait_time'];
-            $ReturnValue+=$WaitTimesForSize_v;
-        }
-        //divide $ReturnValue by the number of values to get the average
-        $ReturnValue = $ReturnValue/$NumRows;
-
-        return $ReturnValue;
-    }
-}
+*/
 
 $RestaurantObject = new Restaurant();
+
+
+/*
+echo "TEST<br>";
+
+$RestaurantObject->findBestTableGroupForSeatingDB(1,$RET);
+$RestaurantObject->seatGroupDB(1,$RET);
+*/ 
+
+
+
 
 ?>
