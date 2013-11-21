@@ -3,12 +3,13 @@ package edu.rpi.pagr;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.app.SherlockActivity;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -23,47 +24,35 @@ import org.apache.http.util.EntityUtils;
 
 import java.util.ArrayList;
 
-import edu.rpi.pagr.misc.Appetizer;
 import edu.rpi.pagr.service.NotificationService;
 import edu.rpi.pagr.utils.GatewayConnectionUtils;
 
-public class ViewCartActivity extends SherlockFragmentActivity {
+public class ViewAppetizerActivity extends SherlockActivity {
 
-    private Button button_submit_order;
+    private AsyncTask<Void, Void, String> mCreateOrderTask;
+    private Button button_oh_yeah;
+    private String mUUID;
     private String mReservationID;
-    private String mAppetizerID;
-    private String mQuantity;
-    private String mOrderID;
-    private TextView mYourOrder;
-    private AsyncTask<Void, Void, String> mSubmitOrderTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_cart);
+        setContentView(R.layout.activity_order_appetizer);
 
         Intent intent = getIntent();
         mReservationID = (String) intent.getSerializableExtra("RESERVATION_ID");
-        mAppetizerID = (String) intent.getSerializableExtra("ORDER_ITEM");
-        mQuantity = (String) intent.getSerializableExtra("QUANTITY");
-        mOrderID = (String) intent.getSerializableExtra("ORDER_ID");
+        mUUID = (String) intent.getSerializableExtra("UUID");
 
-        int ID = Integer.parseInt( mAppetizerID );
-
-//        Toast.makeText(getBaseContext(), mAppetizerID, Toast.LENGTH_SHORT).show();
-        mYourOrder = (TextView) findViewById(R.id.text_your_order);
-        mYourOrder.setText( "Your Order: " + mQuantity + " " + Appetizer.AppetizerName[ID] );
-
-        button_submit_order = (Button) findViewById(R.id.button_submit_order);
-        button_submit_order.setOnClickListener( new View.OnClickListener() {
+        button_oh_yeah = (Button) findViewById(R.id.button_oh_yeah);
+        button_oh_yeah.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSubmitOrderTask = new SubmitOrderTask().execute();
+                mCreateOrderTask = new CreateOrderTask().execute();
             }
         });
     }
 
-    private class SubmitOrderTask extends AsyncTask<Void, Void, String> {
+    private class CreateOrderTask extends AsyncTask<Void, Void, String> {
 
         @Override
         protected String doInBackground(Void... params) {
@@ -73,13 +62,11 @@ public class ViewCartActivity extends SherlockFragmentActivity {
 
                 // Send Values
                 ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("item_id", mAppetizerID ) );
+                nameValuePairs.add(new BasicNameValuePair("handset_id", mUUID ) ); // mUUID
                 nameValuePairs.add(new BasicNameValuePair("reservation_id", mReservationID ) );
-                nameValuePairs.add(new BasicNameValuePair("order_id", mOrderID ) );
-                nameValuePairs.add(new BasicNameValuePair("quantity", mQuantity ) );
 
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(GatewayConnectionUtils.getApplicationBridgeBase()+GatewayConnectionUtils.getAddOrderItem());
+                HttpPost httppost = new HttpPost(GatewayConnectionUtils.getApplicationBridgeBase()+GatewayConnectionUtils.getCreateOrder());
 
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
@@ -99,13 +86,20 @@ public class ViewCartActivity extends SherlockFragmentActivity {
         @Override
         protected void onPostExecute(String result) {
 
-            mSubmitOrderTask = null;
+            mCreateOrderTask = null;
 
-            if (result.equals("OK")) {
-                Toast.makeText(getBaseContext(), "We got your order!", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(getBaseContext(), result, Toast.LENGTH_SHORT).show();
+            if (result != null) {
+                try {
+//                    int ID = Integer.parseInt( result );
+
+                    Intent intent = new Intent(getBaseContext(), AppetizerFragmentActivity.class);
+                    intent.putExtra("ORDER_ID", result);
+                    intent.putExtra("RESERVATION_ID", mReservationID);
+                    startActivity(intent);
+                    finish();
+                } catch (Exception ignored) {
+                    Toast.makeText(getBaseContext(), result, Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

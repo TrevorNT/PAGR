@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import org.apache.http.util.EntityUtils;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import edu.rpi.pagr.service.NotificationService;
 import edu.rpi.pagr.utils.GatewayConnectionUtils;
 
 /**
@@ -73,7 +75,7 @@ public class MakeReservationActivity extends SherlockActivity {
 
                 // Send Values
                 ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("handset_id", getUserID() ) );
+                nameValuePairs.add(new BasicNameValuePair("handset_id", getUserID() ) ); //getUserID()
                 nameValuePairs.add(new BasicNameValuePair("party_size", mPartySize ) );
                 if (mGuestName == null) {
                     mGuestName = "Guest";
@@ -104,10 +106,26 @@ public class MakeReservationActivity extends SherlockActivity {
             mCreateReservationTask = null;
 
             if (result != null) {
-                Intent intent = new Intent(getBaseContext(), AppetizerFragmentActivity.class);
-                intent.putExtra("RESERVATION_ID", result);
-                startActivity(intent);
-                finish();
+                try {
+                    int reservationID = Integer.parseInt( result );
+
+                    Intent serviceIntent = new Intent(getBaseContext(), NotificationService.class);
+                    Bundle b = new Bundle();
+                    b.putString("reservationID", result);
+                    b.putString("UUID", getUserID());
+                    serviceIntent.putExtras(b);
+
+                    startService(serviceIntent);
+
+                    Intent intent = new Intent(getBaseContext(), ViewAppetizerActivity.class);
+                    intent.putExtra("RESERVATION_ID", result);
+                    intent.putExtra("UUID", getUserID());
+                    startActivity(intent);
+                    finish();
+                } catch (Exception ignored) {
+                    Toast.makeText( getBaseContext(), result, Toast.LENGTH_LONG).show();
+                    Log.v("Make REservation Error", result);
+                }
             }
         }
     }
