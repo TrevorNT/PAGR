@@ -13,6 +13,9 @@
 	{
 		$good = "good";
 	}
+
+	// Include the seating algorithm file.
+	include(dirname(__FILE__))."/../seating-algorithm/algorithm.php";
 	
 	
 	if(isset($_POST['get_order']))
@@ -197,6 +200,14 @@
 	                onClick="window.location.href = \'../index.php\'"  value = "Go Back" >
 	                </input> </div>';
     }
+	elseif(isset($_POST['seat_customer']))
+	{
+		$RETURNEDTABLEGROUP = 0;
+		$FOUND_TABLE = $RestaurantObject->findBestTableGroupForSeatingDB($_POST["customer"],
+																		 $RETURNEDTABLEGROUP);
+	
+		$RestaurantObject->seatGroupDB($_POST["customer"], $RETURNEDTABLEGROUP);
+	}
     
     
 ?>

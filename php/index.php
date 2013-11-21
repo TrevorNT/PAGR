@@ -179,7 +179,7 @@
 					<input type="submit" name = "get_order" 
 					class="btn btn-lg btn-success" value = "Get Order">
 					
-					<input type="submit" class="btn btn-lg btn-default" value = "Seat Customer"> 
+					<input type="submit" class="btn btn-lg btn-default" name= "seat_customer" value = "Seat Customer"> 
 					<br>
 					<br>
 					<input type="submit" name = "delete" class="btn btn-lg btn-danger" value = "DELETE"> 
