@@ -1,7 +1,10 @@
 <!DOCTYPE html>
  
 <?php
-	include "pagr_db.php";
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/pagr_db.php";
+   	include_once($path);
+
 	$PAGR_database = get_pagr_db_connection();
 	if(mysqli_connect_errno($PAGR_database))
 	{
@@ -14,7 +17,7 @@
 <script type="text/javascript">
 	function addWalkInCust()
 	{
-		WINDOW = window.open("/rcp_scripts/add_walkin_wp.php","addCust", 
+		WINDOW = window.open("/PAGR/php/rcp_scripts/add_walkin_wp.php","addCust", 
 		                     "height = 400, width = 335, menubar = 0, scrollbars = 0");
 		X = (screen.width-335)/2
 		Y = (screen.height-400)/2
@@ -24,7 +27,7 @@
 
 	function addReservationCust()
 	{
-		WINDOW = window.open("/rcp_scripts/add_reservation_wp.php","addCust",
+		WINDOW = window.open("/PAGR/php/rcp_scripts/add_reservation_wp.php","addCust",
 		            "height = 500, width = 500, menubar = 0, scrollbars = 0");
 		            
 		X = (screen.width-500)/2
@@ -157,7 +160,7 @@
             <h4 align = "center"> </h4>
             <h3 align = "center">Select Customer</h3>
 			<div align = "center" >
-				<form method="Post" action= "/rcp_scripts/action_button.php">
+				<form method="Post" action= "/PAGR/php/rcp_scripts/action_button.php">
 					<select name = "customer">
 						<?php 
 							$table = $PAGR_database->query("SELECT patron_id, 
@@ -190,12 +193,15 @@
 				    tables are <font color = "FF6666"><b>OCCUPIED </b></font> </h4>
 				    
 				<div align = "center" class= "container" id= "table_container">
-					<script type="text/javascript" src="/rcp_scripts/raphael.js"></script>
+					<script type="text/javascript" src="/PAGR/php/rcp_scripts/raphael.js"></script>
 					<!-- Call the php driver to create the tables. -->
-					<?php include(dirname(__FILE__))."/rcp_scripts/tables.php"; 
+					<?php 
+						$path = $_SERVER['DOCUMENT_ROOT'];
+   						$path .= "/PAGR/php/rcp_scripts/tables.php";
+   						include_once($path);
 					createTables($PAGR_database); ?>
 				</div>
-				<form method="Post" action= "/rcp_scripts/unmark_tables.php">
+				<form method="Post" action= "/PAGR/php/rcp_scripts/unmark_tables.php">
 				    
 				    <h4> Unmark Table:
 				    <select name = "table">
@@ -223,7 +229,11 @@
                   <h3 class="panel-title" align = "center">Reservations</h3>
                 </div>
                 <div class="panel-body">
-                  <?php include(dirname(__FILE__))."/rcp_scripts/reservation_handler.php"; 
+                  <?php 
+			$path = $_SERVER['DOCUMENT_ROOT'];
+   			$path .= "/PAGR/php/rcp_scripts/reservation_handler.php";
+   			include_once($path);
+
 				  clearReservations($PAGR_database); 
 				  populateReservations($PAGR_database);?>
                 </div>

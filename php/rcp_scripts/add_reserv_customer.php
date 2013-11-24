@@ -3,7 +3,10 @@
 
 <?php
 	// Get the database connection.
-	include(dirname(__FILE__))."/../pagr_db.php";
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/pagr_db.php";
+   	include_once($path);
+
 	$PAGR_database = get_pagr_db_connection();
 	if(mysqli_connect_errno($PAGR_database))
 	{
