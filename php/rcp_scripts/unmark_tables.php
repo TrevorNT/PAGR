@@ -2,7 +2,7 @@
 
 	include_once(dirname(__FILE__))."/../pagr_db.php";
 	$PAGR_database = get_pagr_db_connection();
-	include_once(dirname(__FILE__))."/../seating-algorithm/algorithm.php";
+	include_once(dirname(__FILE__))."/../seating-algorithm/algorithmDB.php";
 
 	if(isset($_POST['table']))
 	{

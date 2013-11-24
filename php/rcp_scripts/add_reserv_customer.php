@@ -65,9 +65,7 @@
         $YEAR = (int) $YEAR;
         
         $CUR_TIME = time();
-        $REQ_TIME = gmmktime((int)$HOUR,$MINUTE,0,$MONTH,$DAY,$YEAR);
-       
-       
+        $REQ_TIME = mktime((int)$HOUR,$MINUTE,0,$MONTH,$DAY,$YEAR);
         
         if($REQ_TIME < $CUR_TIME)
         {

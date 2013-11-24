@@ -8,7 +8,7 @@
  *@version 1.2.0
  */
 
-include "pagr_db.php";
+include_once(dirname(__FILE__))."/../pagr_db.php";
 
 $STARTTIME = time();
 
