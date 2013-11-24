@@ -15,7 +15,7 @@
 	}
 
 	// Include the seating algorithm file.
-	include(dirname(__FILE__))."/../seating-algorithm/algorithm.php";
+	include(dirname(__FILE__))."/../seating-algorithm/algorithmDB.php";
 	
 	
 	if(isset($_POST['get_order']))
