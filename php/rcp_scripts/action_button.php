@@ -3,7 +3,10 @@
 
 <?php
 	// Get the database connection.
-	include(dirname(__FILE__))."/../pagr_db.php";
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/pagr_db.php";
+   	include_once($path);
+
 	$PAGR_database = get_pagr_db_connection();
 	if(mysqli_connect_errno($PAGR_database))
 	{
@@ -15,7 +18,9 @@
 	}
 
 	// Include the seating algorithm file.
-	include(dirname(__FILE__))."/../seating-algorithm/algorithmDB.php";
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/seating-algorithm/algorithmDB.php";
+   	include_once($path);
 	
 	
 	if(isset($_POST['get_order']))

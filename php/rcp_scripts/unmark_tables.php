@@ -1,8 +1,15 @@
 <?php
 
-	include_once(dirname(__FILE__))."/../pagr_db.php";
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/pagr_db.php";
+   	include_once($path);
+	
+
 	$PAGR_database = get_pagr_db_connection();
-	include_once(dirname(__FILE__))."/../seating-algorithm/algorithmDB.php";
+
+	$path = $_SERVER['DOCUMENT_ROOT'];
+   	$path .= "/PAGR/php/seating-algorithm/algorithmDB.php";
+   	include_once($path);
 
 	if(isset($_POST['table']))
 	{
